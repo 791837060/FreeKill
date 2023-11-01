@@ -353,7 +353,7 @@ function setEmotion(id, emotion, isCardId) {
     // TODO: set picture emotion
     return;
   }
-  const component = Qt.createComponent("../RoomElement/PixmapAnimation.qml");
+  const component = Qt.createComponent("../RoomElement/PixmapAnimation.qml"); //ul 像素图动画
   if (component.status !== Component.Ready)
     return;
 
@@ -450,7 +450,7 @@ function changeHp(id, delta, losthp) {
 }
 
 function doIndicate(from, tos) {
-  const component = Qt.createComponent("../RoomElement/IndicatorLine.qml");
+  const component = Qt.createComponent("../RoomElement/IndicatorLine.qml"); //ul 指标线
   if (component.status !== Component.Ready)
     return;
 
@@ -1044,9 +1044,9 @@ callbacks["AskForChoice"] = (jsonData) => {
   roomScene.state = "replying";
   let qmlSrc;
   if (!detailed) {
-    qmlSrc = "../RoomElement/ChoiceBox.qml";
+    qmlSrc = "../RoomElement/ChoiceBox.qml"; //ul 选择框
   } else {
-    qmlSrc = "../RoomElement/DetailedChoiceBox.qml";
+    qmlSrc = "../RoomElement/DetailedChoiceBox.qml"; //ul 详细选择框
   }
   roomScene.popupBox.sourceComponent = Qt.createComponent(qmlSrc);
   const box = roomScene.popupBox.item;
@@ -1443,7 +1443,7 @@ callbacks["Animate"] = (jsonData) => {
         return null;
       }
 
-      roomScene.bigAnim.source = "../RoomElement/UltSkillAnimation.qml";
+      roomScene.bigAnim.source = "../RoomElement/UltSkillAnimation.qml"; //ul大招技能动画
       roomScene.bigAnim.item.loadData({
         skill_name: data.name,
         general: data.deputy ? photo.deputyGeneral : photo.general,

@@ -1,5 +1,7 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
+
+
 local function drawInit(room, player, n)
   -- TODO: need a new function to call the UI
   local cardIds = room:getNCards(n)
