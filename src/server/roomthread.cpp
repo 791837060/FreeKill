@@ -69,7 +69,7 @@ RoomThread::RoomThread(Server *m_server) {
                       QJsonObject jsonObject = value.toObject();
                       // 获取"ch"和"en"字段的值
                       QString ch = jsonObject["ch"].toString();
-                      QString en = jsonObject["en"].toString();
+                      QString en = jsonObject["en"].toString()+","+jsonObject["en2"].toString();
                       lua_pushstring(L,ch.toUtf8().constData());
                       lua_pushstring(L,en.toUtf8().constData());
                       lua_settable(L,-3);//弹出上两个，表在顶

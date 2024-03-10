@@ -25,7 +25,8 @@ GraphicsBox {
     TextField {
         id: serverAddrEdit
         Layout.fillWidth: true
-        placeholderText: qsTr("Word")
+        placeholderText: qsTr("w")
+        placeholderTextColor: "red"
         text: ""
         color: "#E4D5A0"
         Keys.onPressed: {  
@@ -36,6 +37,12 @@ GraphicsBox {
                 finished();
             }  
         }
+        background: Rectangle {
+            color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
+            radius: 5  // 设置圆角半径
+        }
+        width: 200
+        height: 50
       }
 
     Button {

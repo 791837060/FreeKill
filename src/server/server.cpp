@@ -139,7 +139,7 @@ void Server::createRoom(ServerPlayer *owner, const QString &name, int capacity,
   }
 
   QString wordList;
-  wordList = "wordList";
+  wordList = name;
 
   room->setName(name);
   room->setCapacity(capacity);

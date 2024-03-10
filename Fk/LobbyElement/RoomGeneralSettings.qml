@@ -24,7 +24,8 @@ Flickable {
         font.pixelSize: 18
         Layout.rightMargin: 16
         Layout.fillWidth: true
-        text: luatr("$RoomName").arg(Self.screenName)
+        // text: Backend.translate("$RoomName").arg(Self.screenName)
+        text: "1_word"
       }
     }
 
@@ -88,15 +89,43 @@ Flickable {
           config.preferredGeneralNum = value;
         }
       }
-      SpinBox {
-        from: 32767
-        to: 32767
-        editable: true
-        value: config.preferredTimeout
+    }
 
-        onValueChanged: {
-          config.preferredTimeout = value;
-        }
+    Text {
+      id: warning
+      anchors.rightMargin: 8
+      visible: {
+        //config.disabledPack; // 没什么用，只是为了禁包刷新时刷新visible罢了
+        const avail = JSON.parse(Backend.callLuaFunction("GetAvailableGeneralsNum", []));
+        const ret = avail < config.preferredGeneralNum * config.preferedPlayerNum;
+        return ret;
+      }
+      text: Backend.translate("No enough generals")
+      color: "red"
+    }
+
+    RowLayout {
+      anchors.rightMargin: 8
+      spacing: 16
+      Text {
+        text: Backend.translate("Operation timeout")
+      }
+      //SpinBox {
+        //from: 30000
+        //to: 32767
+        //editable: true
+        //value: config.preferredTimeout
+        //onValueChanged: {
+          //config.preferredTimeout = value;
+        //}
+      //}
+      TextField {
+        id: preferredTimeoutId
+        maximumLength: 16
+        font.pixelSize: 18
+        Layout.rightMargin: 16
+        Layout.fillWidth: true
+        text: "32000"
       }
       SpinBox {
         from: 0
@@ -192,6 +221,8 @@ Flickable {
             }
           });
 
+          let preferredTimeoutIdInt = parseInt(preferredTimeoutId.text);
+          config.preferredTimeout = preferredTimeoutIdInt;
           ClientInstance.notifyServer(
             "CreateRoom",
             JSON.stringify([roomName.text, playerNum.value,
