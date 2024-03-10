@@ -404,7 +404,7 @@ local collateralSkill = fk.CreateActiveSkill{
     local use = room:askForUseCard(to, "slash", nil, prompt, nil, extra_data, effect)
     if use then
       use.extraUse = true
-      room:useCard(use) ---抵押技能
+      room:useCard(use)
     else
       local from = room:getPlayerById(effect.from)
       if from.dead then return end
@@ -978,7 +978,7 @@ local bladeSkill = fk.CreateTriggerSkill{
     end
   end,
   on_use = function(self, event, target, player, data)
-    player.room:useCard(self.cost_data) --- 刀锋技能
+    player.room:useCard(self.cost_data)
   end,
 }
 Fk:addSkill(bladeSkill)

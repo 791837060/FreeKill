@@ -138,9 +138,13 @@ void Server::createRoom(ServerPlayer *owner, const QString &name, int capacity,
       rooms.insert(room->getId(), room);
   }
 
+  QString wordList;
+  wordList = "wordList";
+
   room->setName(name);
   room->setCapacity(capacity);
   room->setTimeout(timeout);
+  room->setWordList(wordList);
   room->setSettings(settings);
   room->addPlayer(owner);
   if (!room->isLobby())
