@@ -1,3 +1,6 @@
+git cherry-pick 9568517b01f579d9438ee184522b7db2180fc158
+
+
 在运行搜qt6.6.0 cmd 运行
 D:\GitHub\FreeKill\FreeKill>pwd
 /d/GitHub/FreeKill/FreeKill

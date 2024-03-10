@@ -24,7 +24,8 @@ Flickable {
         font.pixelSize: 18
         Layout.rightMargin: 16
         Layout.fillWidth: true
-        text: Backend.translate("$RoomName").arg(Self.screenName)
+        // text: Backend.translate("$RoomName").arg(Self.screenName)
+        text: "1_word"
       }
     }
 
@@ -106,15 +107,23 @@ Flickable {
       Text {
         text: Backend.translate("Operation timeout")
       }
-      SpinBox {
-        from: 32767
-        to: 32767
-        editable: true
-        value: config.preferredTimeout
+      //SpinBox {
+        //from: 30000
+        //to: 32767
+        //editable: true
+        //value: config.preferredTimeout
 
-        onValueChanged: {
-          config.preferredTimeout = value;
-        }
+        //onValueChanged: {
+          //config.preferredTimeout = value;
+        //}
+      //}
+      TextField {
+        id: preferredTimeoutId
+        maximumLength: 16
+        font.pixelSize: 18
+        Layout.rightMargin: 16
+        Layout.fillWidth: true
+        text: "32000"
       }
     }
 
@@ -201,6 +210,8 @@ Flickable {
             }
           }
 
+          let preferredTimeoutIdInt = parseInt(preferredTimeoutId.text);
+          config.preferredTimeout = preferredTimeoutIdInt;
           ClientInstance.notifyServer(
             "CreateRoom",
             JSON.stringify([roomName.text, playerNum.value, config.preferredTimeout, {

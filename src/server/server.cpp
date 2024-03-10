@@ -139,7 +139,7 @@ void Server::createRoom(ServerPlayer *owner, const QString &name, int capacity,
   }
 
   QString wordList;
-  wordList = "wordList";
+  wordList = name;
 
   room->setName(name);
   room->setCapacity(capacity);
@@ -371,8 +371,8 @@ void Server::handleNameAndPassword(ClientSocket *client, const QString &name,
   }
 
   //md5 检测失败
-  //if (md5 != md5_str) {
-  if (false) {
+  if (md5 != md5_str) {
+  //if (false) {
     QJsonArray body;
     body << -2;
     body << (Router::TYPE_NOTIFICATION | Router::SRC_SERVER |

@@ -350,36 +350,62 @@ GameEvent.functions[GameEvent.Phase] = function(self)
 end
 
 function showWord(player,room)
-  if player.id < 0 then -- Robot
-    -- 不执行  
-    -- print("代码没有被执行.")  
-  else  
-    -- 如果随机数小于给定的概率，则执行代码    
-    -- 在这里放你想要以概率执行的代码  
-    -- room:delay(31536000000);
-    -- 获取随机键值对
-    local randomKey, randomValue = getRandomKeyValue(wordListVar)
-    -- print("Random Key:", randomKey)
-    -- print("Random Value:", randomValue)
-    while true do
-      local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey)
-      -- print(result)
-      if result == "  " then
-        result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomValue)
-        -- break
-      end
-      -- if result == " " then
-        -- break
-      -- end
-      if string.lower(result) == string.lower(randomValue) then
-        break
-      end
-      -- coroutine.yield("__handleRequest", 31536000000)
-      coroutine.yield("__handleRequest", 31536000000)
-    end
-    -- print("jack2222") 
+  if wordListVar == nil or next(wordListVar) == nil then
+    print("wordList=", room.wordList, string.find(room.wordList, "_word"), wordListVar)
+    return
+  else
+     
   end
-end 
+  
+  if string.find(room.wordList, "_word") then
+      -- print("str1 contains str2")
+      if player.id < 0 then -- Robot
+        -- 不执行  
+        -- print("代码没有被执行.")  
+      else  
+        -- 如果随机数小于给定的概率，则执行代码    
+        -- 在这里放你想要以概率执行的代码  
+        -- room:delay(31536000000);
+        -- 获取随机键值对
+        local randomKey, randomValue = getRandomKeyValue(wordListVar)
+        -- print("Random Key:", randomKey)
+        -- print("Random Value:", randomValue)
+        while true do
+          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey)
+          -- print(result)
+          if result == "  " then
+            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomValue)
+            -- break
+          end
+          -- if result == " " then
+            -- break
+          -- end
+          if string.lower(result) == string.lower(split(randomValue,",")[1]) then
+            break
+          end
+          -- coroutine.yield("__handleRequest", 31536000000)
+          coroutine.yield("__handleRequest", 31536000000)
+        end
+        -- print("jack2222") 
+      end
+  else
+      -- print("str1 does not contain str2")
+  end
+end
+
+function split(input, delimiter)
+  input = tostring(input)
+  delimiter = tostring(delimiter)
+  if (delimiter == "") then return false end
+  local pos, arr = 0, {}
+  for st, sp in function() return string.find(input, delimiter, pos, true) end do
+      table.insert(arr, string.sub(input, pos, st - 1))
+      pos = sp + 1
+  end
+  table.insert(arr, string.sub(input, pos))
+  return arr
+end
+
 
 function showWord_back(player,room)
   --room.room:getOwner():getId()
@@ -394,7 +420,7 @@ function showWord_back(player,room)
       -- 获取随机键值对
       local randomKey, randomValue = getRandomKeyValue(wordListVar)
       -- print("Random Key:", randomKey)
-      -- print("Random Value:", randomValue)
+      print("Random Value:", randomValue)
       while true do
         local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey)
         -- print(result)
@@ -405,7 +431,7 @@ function showWord_back(player,room)
         -- if result == " " then
           -- break
         -- end
-        if string.lower(result) == string.lower(randomValue) then
+        if string.lower(result) == string.lower(split(randomValue,",")[1]) then
           break
         end
         -- coroutine.yield("__handleRequest", 31536000000)
