@@ -1,3 +1,4 @@
+#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "room.h"
@@ -363,6 +364,10 @@ QList<ServerPlayer *> Room::getObservers() const { return observers; }
 bool Room::hasObserver(ServerPlayer *player) const { return observers.contains(player); }
 
 int Room::getTimeout() const { return timeout; }
+
+QString Room::getWordList() const { return wordList; }
+
+void Room::setWordList(QString wordList) { this->wordList = wordList; }
 
 void Room::setTimeout(int timeout) { this->timeout = timeout; }
 

@@ -83,7 +83,6 @@ else ()
 endif ()
 
 target_sources(FreeKill PRIVATE ${freekill_SRCS})
-target_precompile_headers(FreeKill PRIVATE "pch.h")
 target_link_libraries(FreeKill PRIVATE
   ${LUA_LIB}
   ${SQLITE3_LIB}

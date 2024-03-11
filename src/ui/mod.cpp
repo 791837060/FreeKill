@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "mod.h"
 #include "git2.h"
 #include "util.h"

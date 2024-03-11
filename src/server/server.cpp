@@ -1,3 +1,4 @@
+#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "server.h"
@@ -138,6 +139,9 @@ void Server::createRoom(ServerPlayer *owner, const QString &name, int capacity,
       rooms.insert(room->getId(), room);
   }
 
+  QString wordList;
+  wordList = name;
+  room->setWordList(wordList);
   room->setName(name);
   room->setCapacity(capacity);
   room->setTimeout(timeout);
