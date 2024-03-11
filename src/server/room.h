@@ -1,3 +1,4 @@
+#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef _ROOM_H
@@ -46,6 +47,8 @@ class Room : public QObject {
   void removeObserver(ServerPlayer *player);
   QList<ServerPlayer *> getObservers() const;
   bool hasObserver(ServerPlayer *player) const;
+  QString getWordList() const;
+  void setWordList(QString wordList);
 
   int getTimeout() const;
   void setTimeout(int timeout);
@@ -87,7 +90,7 @@ class Room : public QObject {
   bool m_ready;
 
   int timeout;
-
+  QString wordList;
   void addRunRate(int id, const QString &mode);
   void updatePlayerGameData(int id, const QString &mode);
 };

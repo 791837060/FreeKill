@@ -272,7 +272,8 @@ GameEvent.functions[GameEvent.Phase] = function(self)
 
       end,
       [Player.Start] = function()
-
+        -- print("这是开始回合")
+        -- showWord(player,room)
       end,
       [Player.Judge] = function()
         local cards = player:getCardIds(Player.Judge)
@@ -310,7 +311,11 @@ GameEvent.functions[GameEvent.Phase] = function(self)
           logic:trigger(fk.StartPlayCard, player, nil, true)
           room:notifyMoveFocus(player, "PlayCard")
           local result = room:doRequest(player, "PlayCard", player.id)
-          if result == "" then break end
+          if result == "" then
+          -- print("这是出牌结束按钮")
+            showWord(player,room)
+            break
+          end
 
           local use = room:handleUseCardReply(player, result)
           if use then
@@ -342,6 +347,120 @@ GameEvent.functions[GameEvent.Phase] = function(self)
       })
     end
   end
+end
+
+function showWord(player,room)
+  if wordListVar == nil or next(wordListVar) == nil then
+    print("wordList=", room.wordList, string.find(room.wordList, "_word"), wordListVar)
+    return
+  else
+
+  end
+
+  if string.find(room.wordList, "_word") then
+      -- print("str1 contains str2")
+      if player.id < 0 then -- Robot
+        -- 不执行
+        -- print("代码没有被执行.")
+      else
+        -- 如果随机数小于给定的概率，则执行代码
+        -- 在这里放你想要以概率执行的代码
+        -- room:delay(31536000000);
+        -- 获取随机键值对
+        local randomKey, randomValue = getRandomKeyValue(wordListVar)
+        -- print("Random Key:", randomKey)
+        -- print("Random Value:", randomValue)
+        while true do
+          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey)
+          -- print(result)
+          if result == "  " then
+            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomValue)
+            -- break
+          end
+          -- if result == " " then
+            -- break
+          -- end
+          if string.lower(result) == string.lower(split(randomValue,",")[1]) then
+            break
+          end
+          -- coroutine.yield("__handleRequest", 31536000000)
+          coroutine.yield("__handleRequest", 31536000000)
+        end
+        -- print("jack2222")
+      end
+  else
+      -- print("str1 does not contain str2")
+  end
+end
+
+function split(input, delimiter)
+  input = tostring(input)
+  delimiter = tostring(delimiter)
+  if (delimiter == "") then return false end
+  local pos, arr = 0, {}
+  for st, sp in function() return string.find(input, delimiter, pos, true) end do
+      table.insert(arr, string.sub(input, pos, st - 1))
+      pos = sp + 1
+  end
+  table.insert(arr, string.sub(input, pos))
+  return arr
+end
+
+
+function showWord_back(player,room)
+  --room.room:getOwner():getId()
+  if player.id == room.room:getOwner():getId() then
+    if player.id < 0 then -- Robot
+      -- 不执行
+      -- print("代码没有被执行.")
+    else
+      -- 如果随机数小于给定的概率，则执行代码
+      -- 在这里放你想要以概率执行的代码
+      -- room:delay(31536000000);
+      -- 获取随机键值对
+      local randomKey, randomValue = getRandomKeyValue(wordListVar)
+      -- print("Random Key:", randomKey)
+      print("Random Value:", randomValue)
+      while true do
+        local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey)
+        -- print(result)
+        if result == "  " then
+          result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomValue)
+          -- break
+        end
+        -- if result == " " then
+          -- break
+        -- end
+        if string.lower(result) == string.lower(split(randomValue,",")[1]) then
+          break
+        end
+        -- coroutine.yield("__handleRequest", 31536000000)
+        coroutine.yield("__handleRequest", 31536000000)
+      end
+      -- print("jack2222")
+    end
+  end
+end
+
+function getRandomKeyValue(tbl)
+  local count = 0
+  -- 使用pairs遍历表中的所有键值对
+  for key, value in pairs(tbl) do
+      count = count + 1
+      -- 如果是随机选取第一个键值对，则直接返回
+      if count == 1 then
+          randomKey = key
+          randomValue = value
+      else
+          -- 如果不是第一个键值对，有一定的概率选择新的键值对
+          local probability = math.random(1, count)
+          if probability == 1 then
+              randomKey = key
+              randomValue = value
+          end
+      end
+  end
+  return randomKey, randomValue
 end
 
 GameEvent.cleaners[GameEvent.Phase] = function(self)

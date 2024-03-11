@@ -14,6 +14,7 @@
 ---@field public game_started boolean @ 游戏是否已经开始
 ---@field public game_finished boolean @ 游戏是否已经结束
 ---@field public timeout integer @ 出牌时长上限
+---@field public wordList string[] @ wordList
 ---@field public tag table<string, any> @ Tag清单，其实跟Player的标记是差不多的东西
 ---@field public general_pile string[] @ 武将牌堆，这是可用武将名的数组
 ---@field public draw_pile integer[] @ 摸牌堆，这是卡牌id的数组
@@ -76,6 +77,7 @@ function Room:initialize(_room)
   self.game_started = false
   self.game_finished = false
   self.timeout = _room:getTimeout()
+  self.wordList = _room:getWordList()
   self.tag = {}
   self.general_pile = {}
   self.draw_pile = {}

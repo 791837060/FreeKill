@@ -1,3 +1,4 @@
+#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef _PLAYER_H
