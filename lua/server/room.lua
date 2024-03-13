@@ -16,6 +16,7 @@
 ---@field public timeout integer @ 出牌时长上限
 ---@field public wordList string[] @ wordList
 ---@field public tag table<string, any> @ Tag清单，其实跟Player的标记是差不多的东西
+---@field public wordTag table<string, any>
 ---@field public general_pile string[] @ 武将牌堆，这是可用武将名的数组
 ---@field public draw_pile integer[] @ 摸牌堆，这是卡牌id的数组
 ---@field public discard_pile integer[] @ 弃牌堆，也是卡牌id的数组
@@ -79,6 +80,7 @@ function Room:initialize(_room)
   self.timeout = _room:getTimeout()
   self.wordList = _room:getWordList()
   self.tag = {}
+  self.wordTag = {}
   self.general_pile = {}
   self.draw_pile = {}
   self.discard_pile = {}
@@ -553,10 +555,26 @@ function Room:setTag(tag_name, value)
   self.tag[tag_name] = value
 end
 
+---@param tag_name string @ tag名字
+---@param value any @ 值
+function Room:setWordTag(tag_name, value)
+  self.wordTag[tag_name] = value
+end
+
 --- 获得某个tag的值。
 ---@param tag_name string @ tag名字
 function Room:getTag(tag_name)
   return self.tag[tag_name]
+end
+
+--- 获得某个tag的值。
+---@param tag_name string @ tag名字
+function Room:getWordTag(tag_name)
+  return self.wordTag[tag_name]
+end
+
+function Room:getWordTagObj()
+  return self.wordTag
 end
 
 --- 删除某个tag。

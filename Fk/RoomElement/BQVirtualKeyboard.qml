@@ -76,9 +76,98 @@ Rectangle {
         }
     }
 
-    // 第三行
+    // 第一行
     Row {
         y: 80
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 10
+
+        Repeater {
+            model: {
+                if (isEnglish) {
+                    isUpper ? en_line1_upper : en_line1_lower
+                } else {
+                    page == 1 ? char_page1_line1 : char_page2_line1
+                }
+            }
+
+            Rectangle {
+                width: 60; height: 60
+                radius: 5
+                color: area1.pressed ? "#2A2826" : "#383533"
+
+                Text {
+                    anchors.fill: parent
+                    font.pixelSize: pixelSize
+                    font.family: textFontFamily
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    color: area1.pressed ? "#5D4B37" : "#FFFFFF"
+                    text: modelData
+                }
+
+                MouseArea {
+                    id: area1
+                    anchors.fill: parent
+                    focus: false
+                    onClicked: {
+                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                        //focusedItem.text = focusedItem.text + modelData
+                        input1.text = input1.text + modelData
+                        
+                    }
+                }
+            }
+        }
+    }
+
+    // 第二行
+    Row {
+        y: 150
+        anchors.horizontalCenter: parent.horizontalCenter
+        spacing: 10
+
+        Repeater {
+            model: {
+                if (isEnglish) {
+                    isUpper ? en_line2_upper : en_line2_lower
+                } else {
+                    page == 1 ? char_page1_line2 : char_page2_line2
+                }
+            }
+
+            Rectangle {
+                width: 60; height: 60
+                radius: 5
+                color: area2.pressed ? "#2A2826" : "#383533"
+
+                Text {
+                    anchors.fill: parent
+                    font.pixelSize: pixelSize
+                    font.family: textFontFamily
+                    verticalAlignment: Text.AlignVCenter
+                    horizontalAlignment: Text.AlignHCenter
+                    color: area2.pressed ? "#5D4B37" : "#FFFFFF"
+                    text: modelData
+                }
+
+                MouseArea {
+                    id: area2
+                    anchors.fill: parent
+                    focus: false
+                    onClicked: {
+                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                        //focusedItem.text = focusedItem.text + modelData
+                        input1.text = input1.text + modelData
+                    }
+                }
+            }
+        }
+    }
+
+    // 第三行
+    Row {
+        y: 220
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 10
 
@@ -182,7 +271,7 @@ Rectangle {
 
     // 第四行
     Row {
-        y: 150
+        y: 290
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 10
 
@@ -293,94 +382,7 @@ Rectangle {
         }
     }
 
-    // 第一行
-    Row {
-        y: 220
-        anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
-
-        Repeater {
-            model: {
-                if (isEnglish) {
-                    isUpper ? en_line1_upper : en_line1_lower
-                } else {
-                    page == 1 ? char_page1_line1 : char_page2_line1
-                }
-            }
-
-            Rectangle {
-                width: 60; height: 60
-                radius: 5
-                color: area1.pressed ? "#2A2826" : "#383533"
-
-                Text {
-                    anchors.fill: parent
-                    font.pixelSize: pixelSize
-                    font.family: textFontFamily
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    color: area1.pressed ? "#5D4B37" : "#FFFFFF"
-                    text: modelData
-                }
-
-                MouseArea {
-                    id: area1
-                    anchors.fill: parent
-                    focus: false
-                    onClicked: {
-                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        //focusedItem.text = focusedItem.text + modelData
-                        input1.text = input1.text + modelData
-                        
-                    }
-                }
-            }
-        }
-    }
-
-    // 第二行
-    Row {
-        y: 290
-        anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
-
-        Repeater {
-            model: {
-                if (isEnglish) {
-                    isUpper ? en_line2_upper : en_line2_lower
-                } else {
-                    page == 1 ? char_page1_line2 : char_page2_line2
-                }
-            }
-
-            Rectangle {
-                width: 60; height: 60
-                radius: 5
-                color: area2.pressed ? "#2A2826" : "#383533"
-
-                Text {
-                    anchors.fill: parent
-                    font.pixelSize: pixelSize
-                    font.family: textFontFamily
-                    verticalAlignment: Text.AlignVCenter
-                    horizontalAlignment: Text.AlignHCenter
-                    color: area2.pressed ? "#5D4B37" : "#FFFFFF"
-                    text: modelData
-                }
-
-                MouseArea {
-                    id: area2
-                    anchors.fill: parent
-                    focus: false
-                    onClicked: {
-                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        //focusedItem.text = focusedItem.text + modelData
-                        input1.text = input1.text + modelData
-                    }
-                }
-            }
-        }
-    }
+    
 
     
 
