@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <QQuickItem>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef _CLIENT_H
@@ -20,6 +21,7 @@ public:
   void connectToHost(const QString &server, ushort port);
 
   Q_INVOKABLE void replyToServer(const QString &command, const QString &jsonData);
+  Q_INVOKABLE QQuickItem* getFocusedItem(QQuickItem* rootItem);
   Q_INVOKABLE void notifyServer(const QString &command, const QString &jsonData);
 
   Q_INVOKABLE void callLua(const QString &command, const QString &jsonData, bool isRequest = false);

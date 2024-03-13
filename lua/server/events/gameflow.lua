@@ -349,6 +349,15 @@ GameEvent.functions[GameEvent.Phase] = function(self)
   end
 end
 
+-- 打乱顺序的辅助函数  
+function shuffleTable(t)  
+  for i = #t, 2, -1 do  
+      local j = math.random(i)  
+      t[i], t[j] = t[j], t[i] -- 交换位置  
+  end  
+  return t  
+end  
+
 function showWord(player,room)
   if wordListVar == nil or next(wordListVar) == nil then
     print("wordList=", room.wordList, string.find(room.wordList, "_word"), wordListVar)
@@ -370,11 +379,63 @@ function showWord(player,room)
         local randomKey, randomValue = getRandomKeyValue(wordListVar)
         -- print("Random Key:", randomKey)
         -- print("Random Value:", randomValue)
+        -- // -ulwfcyvi-
+        -- // _ulwfcyvi_
+        -- // property string sentence: "假设我们有一个包含多个单词的字符串 -ulwfcyvi- u _ulwfcyvi_ l_ulwfcyvi_w_ulwfcyvi_f_ulwfcyvi_c"
+        
+        -- 原始字符串  
+        local originalString = split(randomValue,",")[1]  
+        -- local originalString = "abc"
+        -- 将字符串拆分成字符表  
+        local charTable = {}  
+        for i = 1, #originalString do  
+            table.insert(charTable, originalString:sub(i, i))  
+        end
+        
+        -- 如果字符表少于6个元素，随机添加3个不重复的字母  
+        local alphabet = "abcdefghijklmnopqrstuvwxyz" -- 字母表  
+        local availableLetters = {} -- 存储还未添加到charTable的字母  
+        for i = 1, #alphabet do  
+            table.insert(availableLetters, alphabet:sub(i, i))  
+        end  
+          
+        -- 需要添加的字母数量  
+        local numToAdd = math.max(0, 7 - #charTable)  
+          
+        -- 随机添加字母，直到达到所需数量  
+        for _ = 1, numToAdd do  
+            local randomIndex = math.random(1, #availableLetters)  
+            local randomLetter = availableLetters[randomIndex]  
+            table.insert(charTable, randomLetter)  
+            table.remove(availableLetters, randomIndex) -- 从可用字母列表中移除已添加的字母  
+        end 
+          
+        -- 打乱字符顺序  
+        shuffleTable(charTable)  
+          
+        -- 连接字符串的辅助字符串  
+        local connectorString = "_ulwfcyvi_"
+          
+        -- 构建最终字符串  
+        local finalString = ""  
+        for i = 1, #charTable do  
+          -- 添加打乱后的字符  
+          finalString = finalString .. charTable[i]  
+          finalString = finalString .. connectorString   
+        end
+          
+        -- 输出结果  
+        print(finalString)
+
         while true do
-          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey)
+          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey.."-ulwfcyvi-"..finalString)
           -- print(result)
           if result == "  " then
-            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomValue)
+            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomValue.."-ulwfcyvi-"..finalString)
+            -- break
+          end
+          if result == " " then
+            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", randomKey.."-ulwfcyvi-"..finalString)
             -- break
           end
           -- if result == " " then

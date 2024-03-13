@@ -1,4 +1,5 @@
 #include "pch.h"
+#include <QQuickItem>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "client.h"
@@ -46,6 +47,24 @@ void Client::replyToServer(const QString &command, const QString &jsonData) {
   int type = Router::TYPE_REPLY | Router::SRC_CLIENT | Router::DEST_SERVER;
   router->reply(type, command, jsonData);
 }
+
+QQuickItem* Client::getFocusedItem(QQuickItem* rootItem){
+    if ( rootItem->hasActiveFocus() ) {
+        return rootItem;
+    }
+
+    QList<QQuickItem*> childItems = rootItem->childItems();
+    for (QQuickItem *childItem : childItems)
+    {
+        QQuickItem *focusedItem = getFocusedItem(childItem);
+        if (focusedItem) {
+            return focusedItem;
+        }
+    }
+
+    return nullptr;
+}
+
 
 void Client::notifyServer(const QString &command, const QString &jsonData) {
   int type =
