@@ -66,8 +66,9 @@ Rectangle {
                     anchors.fill: parent
                     focus: false
                     onClicked: {
-                        var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        focusedItem.text = focusedItem.text + modelData
+                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                        //focusedItem.text = focusedItem.text + modelData
+                        input1.text = input1.text + modelData
                         word_sub.text = ""
                     }
                 }
@@ -140,8 +141,10 @@ Rectangle {
                     anchors.fill: parent
                     focus: false
                     onClicked: {
-                        var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        focusedItem.text = focusedItem.text + modelData
+                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                        //focusedItem.text = focusedItem.text + modelData
+                        input1.text = input1.text + modelData
+                        
                     }
                 }
             }
@@ -168,8 +171,10 @@ Rectangle {
                 anchors.fill: parent
                 focus: false
                 onClicked: {
-                    var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                    focusedItem.text = focusedItem.text.slice(0, -1)
+                    //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                    //focusedItem.text = focusedItem.text.slice(0, -1)
+                    input1.text = input1.text.slice(0, -1)
+                
                 }
             }
         }
@@ -226,8 +231,10 @@ Rectangle {
                 anchors.fill: parent
                 focus: false
                 onClicked: {
-                    var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                    focusedItem.text += " "
+                    //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                    //focusedItem.text += " "
+                    input1.text += " "
+            
                 }
             }
         }
@@ -253,8 +260,10 @@ Rectangle {
                 anchors.fill: parent
                 focus: false
                 onClicked: {
-                    var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                    focusedItem.text = ""
+                    //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                    //focusedItem.text = ""
+                    input1.text = ""
+                    
                 }
             }
         }
@@ -319,8 +328,10 @@ Rectangle {
                     anchors.fill: parent
                     focus: false
                     onClicked: {
-                        var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        focusedItem.text = focusedItem.text + modelData
+                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                        //focusedItem.text = focusedItem.text + modelData
+                        input1.text = input1.text + modelData
+                        
                     }
                 }
             }
@@ -362,8 +373,9 @@ Rectangle {
                     anchors.fill: parent
                     focus: false
                     onClicked: {
-                        var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        focusedItem.text = focusedItem.text + modelData
+                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                        //focusedItem.text = focusedItem.text + modelData
+                        input1.text = input1.text + modelData
                     }
                 }
             }
