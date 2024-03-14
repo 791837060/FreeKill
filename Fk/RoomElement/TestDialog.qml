@@ -24,44 +24,54 @@ GraphicsBox {
     id: body
     x: 10
     y: title.height + 5
-    spacing: 10
+    spacing: 5
 
     Text {
       text: root.ch
       color: "#E4D5A0"
+      font.weight: Font.Bold // 设置字体加粗  
+      font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
     }
 
-    TextField {
-        id: input1
-        Layout.fillWidth: true
-        placeholderText: qsTr("w")
-        placeholderTextColor: "red"
-        text: ""
-        color: "#E4D5A0"
-        Keys.onPressed: {
-            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                // console.log("回车键被按下")
-                // 在这里添加你希望在按下回车键时执行的代码
-                ClientInstance.replyToServer("", input1.text);
-                finished();
-            }
+    Row {  
+        spacing: 5
+        
+        TextField {
+          id: input1
+          Layout.fillWidth: true
+          placeholderText: qsTr("w")
+          placeholderTextColor: "red"
+          text: ""
+          color: "#E4D5A0"
+          Keys.onPressed: {
+              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                  // console.log("回车键被按下")
+                  // 在这里添加你希望在按下回车键时执行的代码
+                  ClientInstance.replyToServer("", input1.text);
+                  finished();
+              }
+          }
+          background: Rectangle {
+              color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
+              radius: 5  // 设置圆角半径
+          }
+          width: 400
+          height: 50
+          font.weight: Font.Bold // 设置字体加粗 
+          font.pixelSize: 30
         }
-        background: Rectangle {
-            color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
-            radius: 5  // 设置圆角半径
-        }
-        width: 200
-        height: 50
-      }
 
     Button {
         Layout.fillWidth: true
         enabled: input1.text !== ""
         text: "OK"
+        width: 400
         onClicked: {
           ClientInstance.replyToServer("", input1.text);
           finished();
         }
+    }
+    
     }
 
     BQVirtualKeyboard {

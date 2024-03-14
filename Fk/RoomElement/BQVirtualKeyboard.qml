@@ -4,7 +4,7 @@ import QtQuick 2.15
 Rectangle {
     id: virtualKeyboard
     //width: 710; height: 360 多两行时启用
-    width: 710; height: 290 
+    width: 1110; height: 360 
     radius: 5
     color: "black"
 
@@ -32,9 +32,9 @@ Rectangle {
 
     // 第0行
     Row {
-        y: 10
+        y: 0
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
+        spacing: 5
 
         Repeater {
             model: {
@@ -46,19 +46,25 @@ Rectangle {
             }
 
             Rectangle {
-                width: 60; height: 60
+                width: 110; height: 70
                 radius: 5
                 color: area1.pressed ? "#2A2826" : "#383533"
 
                 Text {
                     id: word_sub
                     anchors.fill: parent
-                    font.pixelSize: pixelSize
                     font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
                     color: area1.pressed ? "#5D4B37" : "#FFFFFF"
                     text: modelData
+
+                    // 动态计算字体大小  
+                    //property real availableWidth: parent.width - 5 // 减去一些间距以确保文本不会紧贴边界  
+                    //property real availableHeight: parent.height - 5 // 同上  
+                    //property real fontSize: Math.min(availableWidth, availableHeight) // 假设每个字符大约占据相同的宽度  
+                    font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                 }
 
                 MouseArea {
@@ -78,9 +84,9 @@ Rectangle {
 
     // 第一行
     Row {
-        y: 80
+        y: 75
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
+        spacing: 5
 
         Repeater {
             model: {
@@ -92,13 +98,14 @@ Rectangle {
             }
 
             Rectangle {
-                width: 60; height: 60
+                width: 110; height: 70
                 radius: 5
                 color: area1.pressed ? "#2A2826" : "#383533"
 
                 Text {
                     anchors.fill: parent
-                    font.pixelSize: pixelSize
+                    font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                     font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -125,7 +132,7 @@ Rectangle {
     Row {
         y: 150
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
+        spacing: 5
 
         Repeater {
             model: {
@@ -137,13 +144,14 @@ Rectangle {
             }
 
             Rectangle {
-                width: 60; height: 60
+                width: 110; height: 70
                 radius: 5
                 color: area2.pressed ? "#2A2826" : "#383533"
 
                 Text {
                     anchors.fill: parent
-                    font.pixelSize: pixelSize
+                    font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                     font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -167,19 +175,20 @@ Rectangle {
 
     // 第三行
     Row {
-        y: 220
+        y: 225
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
+        spacing: 5
 
         // shift
         Rectangle {
-            width: 95; height: 60
+            width: 95; height: 70
             radius: 5
             color: area_shift.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
-                font.pixelSize: pixelSize
+                font.weight: Font.Bold // 设置字体加粗 
+                font.pixelSize: 70
                 font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -211,13 +220,14 @@ Rectangle {
             }
 
             Rectangle {
-                width: 60; height: 60
+                width: 110; height: 70
                 radius: 5
                 color: area3.pressed ? "#2A2826" : "#383533"
 
                 Text {
                     anchors.fill: parent
-                    font.pixelSize: pixelSize
+                    font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                     font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
@@ -241,13 +251,14 @@ Rectangle {
 
         // backspace
         Rectangle {
-            width: 95; height: 60
+            width: 95; height: 70
             radius: 5
             color: area_backspace.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
-                font.pixelSize: pixelSize
+                font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                 font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -271,19 +282,20 @@ Rectangle {
 
     // 第四行
     Row {
-        y: 290
+        y: 300
         anchors.horizontalCenter: parent.horizontalCenter
-        spacing: 10
+        spacing: 5
 
         // switch
         Rectangle {
-            width: 95; height: 60
+            width: 95; height: 70
             radius: 5
             color: area_switch.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
-                font.pixelSize: pixelSize
+                font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                 font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -301,13 +313,14 @@ Rectangle {
 
         // space
         Rectangle {
-            width: 375; height: 60
+            width: 375; height: 70
             radius: 5
             color: area_space.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
-                font.pixelSize: pixelSize
+                font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                 font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -330,13 +343,14 @@ Rectangle {
 
         // clear
         Rectangle {
-            width: 95; height: 60
+            width: 95; height: 70
             radius: 5
             color: area_clear.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
-                font.pixelSize: pixelSize
+                font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                 font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
@@ -360,13 +374,14 @@ Rectangle {
         // hide
         Rectangle {
             id: hide
-            width: 95; height: 60
+            width: 95; height: 70
             radius: 5
             color: area_hide.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
-                font.pixelSize: pixelSize
+                font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 70
                 font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
