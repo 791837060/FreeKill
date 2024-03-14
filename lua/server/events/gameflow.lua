@@ -464,9 +464,13 @@ function showWord(player,room)
             result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr)
             -- break
           end
-          -- if result == " " then
-            -- break
-          -- end
+           if result == "qwertyuiopasdfghjkl" then
+             break
+           end
+           if result == "asdfghjklzxcvbnm" then
+            break
+          end
+        
           if string.lower(result) == word then
             break
           end
