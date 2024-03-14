@@ -359,6 +359,9 @@ function shuffleTable(t)
 end  
 
 function showWord(player,room)
+  if string.find(room.wordList, "_free") ~= nil then
+    return
+  end  
   local wordTagInit = room:getWordTag("wordTagInit")
   if "true" ~= wordTagInit then
     insertWordListBack(room)
@@ -367,19 +370,19 @@ function showWord(player,room)
   -- 原始字符串  
   local word = "abc"
     if (wordListVar == nil or next(wordListVar)) == nil then
-      print("wordList2=", room.wordList, string.find(room.wordList, "_word"), wordListVar)
+      -- print("roomName=", room.wordList,",", "_free=",string.find(room.wordList, "_free"))
       ch, enAndEn2 = getWordTagRandomKeyValue(room:getWordTagObj())
-      print("getWordTagRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue enAndEn2:",enAndEn2)
+      -- print("getWordTagRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue enAndEn2:",enAndEn2)
       -- return ?
     else  
       -- Key QString ch = jsonObject["ch"].toString();
       -- Value QString en = jsonObject["en"].toString()+","+jsonObject["en2_long"].toString(); en2是长的
       ch, enAndEn2 = getRandomKeyValue(wordListVar)
-      print("getRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue enAndEn2:",enAndEn2)
+      -- print("getRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue enAndEn2:",enAndEn2)
     end
     word = split(enAndEn2,",")[1]
-    print("word = :",word)
-  if string.find(room.wordList, "_word") then
+    -- print("word = :",word)
+  if string.find(room.wordList, "_word") and (string.find(room.wordList, "_free") == nil) then
       -- print("str1 contains str2")
       if player.id < 0 then -- Robot
         -- 不执行
@@ -596,5 +599,5 @@ function insertWordListBack(room)
       room:setWordTag(value.d.."   "..value.f.."   "..value.g.."   "  ,  value.b..","..value.b.."   "..value.c.."   "..value.e.."   "..value.f) 
   end
   room:setWordTag( "wordTagInit", "true")
-  print("room:getWordTagInit = "..room:getWordTag( "wordTagInit")) 
+  -- print("room:getWordTagInit = "..room:getWordTag( "wordTagInit")) 
 end  
