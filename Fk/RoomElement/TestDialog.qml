@@ -70,6 +70,8 @@ GraphicsBox {
           ClientInstance.replyToServer("", input1.text);
           finished();
         }
+        font.weight: Font.Bold // 设置字体加粗 
+        font.pixelSize: 20
     }
     
     }
