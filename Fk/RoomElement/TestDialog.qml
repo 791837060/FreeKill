@@ -31,6 +31,7 @@ GraphicsBox {
       color: "#E4D5A0"
       font.weight: Font.Bold // 设置字体加粗  
       font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
+      height: 35 // 根据字体大小设置合适的高度
     }
 
     Row {  
@@ -39,8 +40,8 @@ GraphicsBox {
         TextField {
           id: input1
           Layout.fillWidth: true
-          placeholderText: qsTr("w")
-          placeholderTextColor: "red"
+          //placeholderText: qsTr("w")
+          //placeholderTextColor: "red"
           text: ""
           color: "#E4D5A0"
           Keys.onPressed: {
@@ -51,10 +52,10 @@ GraphicsBox {
                   finished();
               }
           }
-          background: Rectangle {
-              color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
-              radius: 5  // 设置圆角半径
-          }
+          //background: Rectangle {
+              //color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
+              //radius: 5  // 设置圆角半径
+          //}
           width: 400
           height: 50
           font.weight: Font.Bold // 设置字体加粗 
@@ -66,6 +67,7 @@ GraphicsBox {
         enabled: input1.text !== ""
         text: "OK"
         width: 400
+        height: 50
         onClicked: {
           ClientInstance.replyToServer("", input1.text);
           finished();
