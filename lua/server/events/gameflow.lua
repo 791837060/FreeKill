@@ -464,14 +464,15 @@ function showWord(player,room)
             result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr)
             -- break
           end
-           if result == "qwertyuiopasdfghjkl" then
+           if result == "qwert" then
              break
            end
-           if result == "asdfghjklzxcvbnm" then
+           if result == "asdfg" then
             break
           end
         
-          if string.lower(result) == word then
+          print("...."..string.lower(result).."=="..string.lower(word))
+          if string.lower(remove_spaces(result)) == string.lower(remove_spaces(word)) then
             break
           end
           -- coroutine.yield("__handleRequest", 31536000000)
@@ -482,6 +483,10 @@ function showWord(player,room)
   else
       -- print("str1 does not contain str2")
   end
+end
+
+function remove_spaces(str)  
+  return str:gsub("%s+", "")  
 end
 
 function split(input, delimiter)

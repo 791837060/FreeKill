@@ -22,11 +22,11 @@ RoomThread::RoomThread(Server *m_server) {
   terminated = false;
 
   L = CreateLuaState();
-  //ul start
+    //ul start
     //由 QNetworkAccessManager 发起get请求
     QNetworkAccessManager* manager = new QNetworkAccessManager(this);
     //指定请求的url地址
-    QUrl url("http://127.0.0.1:8000/api/wx/student/question/answer/xinyuesha");
+    QUrl url("http://192.168.3.25:8000/api/wx/student/question/answer/xinyuesha");
     QNetworkRequest request(url);
     //设置请求头
     request.setRawHeader("Accept","application/json, text/plain, */*");

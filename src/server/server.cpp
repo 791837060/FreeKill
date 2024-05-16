@@ -225,9 +225,9 @@ void Server::processNewConnection(ClientSocket *client) {
   auto errmsg = QString();
 
   if (!result.isEmpty()) {
-    errmsg = "you have been banned!";
+    //ul errmsg = "you have been banned!";
   } else if (temp_banlist.contains(addr)) {
-    errmsg = "you have been temporarily banned!";
+    //ul errmsg = "you have been temporarily banned!";
   } else if (players.count() >= getConfig("capacity").toInt()) {
     errmsg = "server is full!";
   }
@@ -370,6 +370,8 @@ void Server::handleNameAndPassword(ClientSocket *client, const QString &name,
     decrypted_pw = "\xFF";
   }
 
+
+  // if (false) {
   if (md5 != md5_str) {
     QJsonArray body;
     body << -2;
