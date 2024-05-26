@@ -71,7 +71,7 @@ Item {
 
   onIsStartedChanged: {
     if (isStarted) {
-      bgm.play();
+      //ul todo bgm.play();
       canKickOwner = false;
       kickOwnerTimer.stop();
     } else {

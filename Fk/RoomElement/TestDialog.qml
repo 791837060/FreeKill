@@ -93,6 +93,7 @@ GraphicsBox {
 
     function processStringCh(str) {  
         var parts = str.split("-xxxxxx-");  
+        Backend.playSound("./audio/word/"+ parts[2].trim());
         return parts[0];  
     }
 
@@ -100,7 +101,7 @@ GraphicsBox {
         var parts = str.split("-xxxxxx-");  
         var finalParts = [];  
   
-        for (var i = 1; i < parts.length; ++i) {  
+        for (var i = 1; i < parts.length - 1; ++i) {  
             var subParts = parts[i].split("_xxxxxx_");  
             for (var j = 0; j < subParts.length; ++j) {  
                 var subPart = subParts[j].trim(); // 使用 trim() 来移除字符串两端的空白字符  

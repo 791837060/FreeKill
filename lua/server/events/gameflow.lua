@@ -454,14 +454,14 @@ function showWord(player,room)
         -- print("ch....subStr = "..ch.."-xxxxxx-"..subStr)
         -- print("word....subStr = "..word.."-xxxxxx-"..subStr)
         while true do
-          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr)
+          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
           -- print(result)
           if result == "  " then
-            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", split(enAndEn2,",")[2]  .."-xxxxxx-"..  subStr)
+            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", split(enAndEn2,",")[2]  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
             -- break
           end
           if result == " " then
-            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr)
+            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
             -- break
           end
            if result == "qwert" then
