@@ -45,10 +45,13 @@ public:
   Q_INVOKABLE QString pubEncrypt(const QString &key, const QString &data);
   Q_INVOKABLE QString loadConf();
   Q_INVOKABLE QString loadTips();
+  Q_INVOKABLE QString getOneWord(const QString &word);
   Q_INVOKABLE void saveConf(const QString &conf);
 
   Q_INVOKABLE void replyDelayTest(const QString &screenName, const QString &cipher);
+  //Q_INVOKABLE是一个Qt特有的宏，它用于标记类中的成员函数，使其能够在QML中被调用
   Q_INVOKABLE void playSound(const QString &name, int index = 0);
+  Q_INVOKABLE void playSoundWav(const QString &name, int index = 0);
 
   Q_INVOKABLE void copyToClipboard(const QString &s);
   Q_INVOKABLE QString readClipboard();

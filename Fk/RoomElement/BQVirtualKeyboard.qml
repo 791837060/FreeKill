@@ -75,6 +75,7 @@ Rectangle {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
+                        Backend.playSoundWav(mp3Zh);
                         word_sub.text = ""
                     }
                 }

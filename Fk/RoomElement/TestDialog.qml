@@ -15,6 +15,10 @@ GraphicsBox {
     // 使用空格作为分隔符拆分字符串为单词数组  
     property var en_line0_lower: processString(custom_string)
 
+    property var mp3
+    property var mp3Zh
+    property var word
+
   id: root
   title.text: Backend.translate("en")
   width: Math.max(140, body.width + 20)
@@ -48,7 +52,9 @@ GraphicsBox {
               if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                   // console.log("回车键被按下")
                   // 在这里添加你希望在按下回车键时执行的代码
-                  ClientInstance.replyToServer("", input1.text);
+                  Backend.playSound(mp3);
+                  const wordStr = Backend.getOneWord(word+","+input1.text);
+                  ClientInstance.replyToServer("", input1.text+","+wordStr);
                   finished();
               }
           }
@@ -69,7 +75,10 @@ GraphicsBox {
         width: 400
         height: 50
         onClicked: {
-          ClientInstance.replyToServer("", input1.text);
+          Backend.playSound(mp3);
+          const wordStr = Backend.getOneWord(word+","+input1.text);
+          // word + cn + word +back
+          ClientInstance.replyToServer("", input1.text+","+wordStr);
           finished();
         }
         font.weight: Font.Bold // 设置字体加粗 
@@ -93,7 +102,10 @@ GraphicsBox {
 
     function processStringCh(str) {  
         var parts = str.split("-xxxxxx-");  
-        Backend.playSound("./audio/word/"+ parts[2].trim());
+        word = parts[2].trim()
+        mp3 = "./audio/word/"+ parts[2].trim();
+        mp3Zh = "./audio/word/"+ parts[2].trim()+"_zh"
+        Backend.playSoundWav(mp3Zh);
         return parts[0];  
     }
 

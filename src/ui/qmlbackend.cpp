@@ -337,6 +337,120 @@ void QmlBackend::playSound(const QString &name, int index) {
   player->play();
 }
 
+void QmlBackend::playSoundWav(const QString &name, int index) {
+  QString fname(name);
+  if (index == -1) {
+    int i = 1;
+    while (true) {
+      if (!QFile::exists(name + QString::number(i) + ".wav")) {
+        i--;
+        break;
+      }
+      i++;
+    }
+
+    index = i == 0 ? 0 : (QRandomGenerator::global()->generate()) % i + 1;
+  }
+  if (index != 0)
+    fname = fname + QString::number(index) + ".wav";
+  else
+    fname = fname + ".wav";
+
+  if (!QFile::exists(fname))
+    return;
+
+  auto player = new QMediaPlayer;
+  auto output = new QAudioOutput;
+  player->setAudioOutput(output);
+  player->setSource(QUrl::fromLocalFile(fname));
+  output->setVolume(m_volume / 100);
+  connect(player, &QMediaPlayer::playbackStateChanged, this, [=]() {
+    if (player->playbackState() == QMediaPlayer::StoppedState) {
+      player->deleteLater();
+      output->deleteLater();
+    }
+  });
+  player->play();
+}
+
+QString QmlBackend::getOneWord(const QString &word) {
+  //lua_State *L = ClientInstance->getLuaState();
+  QNetworkAccessManager* manager = new QNetworkAccessManager(this);
+  QUrl url("http://192.168.3.25:8000/api/wx/student/question/answer/xinyueshaTest");
+  QNetworkRequest request(url);
+
+  // 设置请求头
+  //设置请求头
+  request.setRawHeader("Accept","application/json, text/plain, */*");
+  request.setRawHeader("Connection","keep-alive");
+  request.setRawHeader("token","123111111111111111111111111111111111");
+  request.setRawHeader("User-Agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36");
+  request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+  // 构建 JSON 数据
+  QJsonObject jsonObject;
+  jsonObject["key1"] = word; // 示例键值对
+  jsonObject["key2"] = word;
+
+  // 将 JSON 对象转换为字符串
+  QJsonDocument jsonDocPar(jsonObject);
+  QByteArray jsonByteArray = jsonDocPar.toJson(QJsonDocument::Compact);
+
+  // 发送 POST 请求并附带 JSON 数据
+  QNetworkReply *reply = manager->post(request, jsonByteArray);
+
+  QEventLoop loop;
+  QString result;
+  QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+  loop.exec();
+
+  // 读取和处理响应数据...
+  int replyCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  if(reply->error() == QNetworkReply::NoError && replyCode == 200) {
+        //大多数服务器返回utf-8格式
+        QByteArray data = reply->readAll();
+        //应答成功，对接收到的数据进行JSON解析
+        //解析网页JSON 将数据保存至day类对象数组中 并调用刷新界面函数
+        // 将JSON字符串转换为QJsonDocument
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(data);
+        // 检查是否解析成功
+        if (!jsonDoc.isNull()) {
+            if (jsonDoc.isArray()) {
+                // 获取JSON数组
+                QJsonArray jsonArray = jsonDoc.array();
+                // 遍历数组中的每个对象
+                for (const QJsonValue &value : jsonArray) {
+                    if (value.isObject()) {
+                        QJsonObject jsonObject = value.toObject();
+                        // 获取"ch"和"en"字段的值
+                        QString ch = jsonObject["ch"].toString();
+                        QString en = jsonObject["en"].toString()+","+jsonObject["en2"].toString();
+                        //lua_pushstring(L,ch.toUtf8().constData());
+                        //lua_pushstring(L,en.toUtf8().constData());
+                        //lua_settable(L,-3);//弹出上两个，表在顶
+                        // word + cn + word +back
+                        result  = ch +","+en;
+                    }
+                }
+            } else {
+                qDebug() << "The JSON document is not an array.";
+            }
+        } else {
+            qDebug() << "Invalid JSON: " << "jsonString";
+        }
+        //qDebug() << QString::fromUtf8(data);
+  } else {
+        qDebug() << "Network error: " << reply->errorString();
+  }
+  //lua_setglobal(L,"wordListVar"); //将堆栈顶位置设置全局变量并出堆栈
+  // 清理并返回结果（如果需要）
+  reply->deleteLater();
+  manager->deleteLater(); // 如果不再需要 manager，也可以在这里删除它
+  // 输出结果
+  qDebug() << "result:" << result ;
+  return result; // 或者返回其他有意义的字符串或数据
+}
+
 void QmlBackend::copyToClipboard(const QString &s) {
   QGuiApplication::clipboard()->setText(s);
 }

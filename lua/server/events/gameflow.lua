@@ -358,6 +358,7 @@ function shuffleTable(t)
   return t  
 end  
 
+local returnResult = "a"
 function showWord(player,room)
   if string.find(room.wordList, "_free") ~= nil then
     return
@@ -379,21 +380,33 @@ function showWord(player,room)
   else   
   end
   local ch, enAndEn2 = "abc","def,ghi"
+  --  word + cn + word +back
   -- 原始字符串  
   local word = "abc"
     if (wordListVar == nil or next(wordListVar)) == nil then
       -- print("roomName=", room.wordList,",", "_free=",string.find(room.wordList, "_free"))
-      ch, enAndEn2 = getWordTagRandomKeyValue(room:getWordTagObj())
+      print("returnResult=", returnResult)
+      if returnResult == "a" then
+        ch, enAndEn2 = getWordTagRandomKeyValue(room:getWordTagObj())
+      else
+        ch = split(returnResult,",")[2]
+        enAndEn2 = split(returnResult,",")[3] ..","..split(returnResult,",")[4]
+      end
       -- print("getWordTagRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue enAndEn2:",enAndEn2)
       -- return ?
     else  
       -- Key QString ch = jsonObject["ch"].toString();
-      -- Value QString en = jsonObject["en"].toString()+","+jsonObject["en2_long"].toString(); en2是长的
-      ch, enAndEn2 = getRandomKeyValue(wordListVar)
+      -- Value QString en = jsonObject["en"].toString()..","..jsonObject["en2_long"].toString(); en2是长的
+      if returnResult == "a" then
+        ch, enAndEn2 = getRandomKeyValue(wordListVar)
+      else
+        ch = split(returnResult,",")[2]
+        enAndEn2 = split(returnResult,",")[3] ..","..split(returnResult,",")[4]
+      end
       -- print("getRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue enAndEn2:",enAndEn2)
     end
     word = split(enAndEn2,",")[1]
-    -- print("word = :",word)
+    print("word = :",word)
   if string.find(room.wordList, "_word") and (string.find(room.wordList, "_free") == nil) then
       -- print("str1 contains str2")
       if player.id < 0 then -- Robot
@@ -454,14 +467,19 @@ function showWord(player,room)
         -- print("ch....subStr = "..ch.."-xxxxxx-"..subStr)
         -- print("word....subStr = "..word.."-xxxxxx-"..subStr)
         while true do
-          local result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
-          -- print(result)
-          if result == "  " then
-            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", split(enAndEn2,",")[2]  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
+          returnResult = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
+          print("returnResult....".. returnResult)
+          -- word + cn + word +back
+          local result = split(returnResult,",")[1]
+          print(result)
+          if result == "aa" then
+            returnResult = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", split(enAndEn2,",")[2]  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
+            result = split(returnResult,",")[1]
             -- break
           end
-          if result == " " then
-            result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
+          if result == "a" then
+            returnResult = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", ch  .."-xxxxxx-"..  subStr .."-xxxxxx-".. word)
+            result = split(returnResult,",")[1]
             -- break
           end
            if result == "qwert" then
