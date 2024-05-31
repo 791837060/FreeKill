@@ -371,8 +371,8 @@ void Server::handleNameAndPassword(ClientSocket *client, const QString &name,
   }
 
 
-  if (false) {
-  // if (md5 != md5_str) {
+  // if (false) {
+  if (md5 != md5_str) {
     QJsonArray body;
     body << -2;
     body << (Router::TYPE_NOTIFICATION | Router::SRC_SERVER |

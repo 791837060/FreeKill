@@ -4,7 +4,8 @@ import QtQuick 2.15
 Rectangle {
     id: virtualKeyboard
     //width: 710; height: 360 多两行时启用
-    width: 1110; height: 360 
+    //width: 1110; height: 360
+    width: 1010; height: 360 
     radius: 5
     color: "black"
 

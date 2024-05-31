@@ -66,10 +66,13 @@ RoomThread::RoomThread(Server *m_server) {
                     if (value.isObject()) {
                         QJsonObject jsonObject = value.toObject();
                         // 获取"ch"和"en"字段的值
-                        QString ch = jsonObject["ch"].toString();
-                        QString en = jsonObject["en"].toString()+","+jsonObject["en2"].toString();
-                        lua_pushstring(L,ch.toUtf8().constData());
-                        lua_pushstring(L,en.toUtf8().constData());
+                        QString front = jsonObject["ch"].toString(); //d f g
+                        //编号a	单词b	音标c	释义d	拆分e	综合法f	                联想法g	        例句h	                        翻译i
+                        //1	    ball	[bɔːl]	n.球	ba+ll	ba爸(拼音)+ll筷子(象形)	爸爸用筷子夹球	The kid is playing the ball. 	孩子在玩皮球。
+                        //QString en = jsonObject["en"].toString()+","+jsonObject["en2"].toString(); // b g f
+                        QString back = jsonObject["en2"].toString(); // b g f
+                        lua_pushstring(L,front.toUtf8().constData());
+                        lua_pushstring(L,back.toUtf8().constData());
                         lua_settable(L,-3);//弹出上两个，表在顶
                         // 输出结果
                         //qDebug() << "Chinese:" << ch << "English:" << en;

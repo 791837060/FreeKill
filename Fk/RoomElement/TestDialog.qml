@@ -9,7 +9,7 @@ GraphicsBox {
     
     // 假设我们有一个包含多个单词的字符串  
     // -xxxxxx-
-    // _xxxxxx_
+    // _xxxxxx_ 拆分字母
     property var ch: processStringCh(custom_string)
   
     // 使用空格作为分隔符拆分字符串为单词数组  
@@ -18,6 +18,12 @@ GraphicsBox {
     property var mp3
     property var mp3Zh
     property var word
+    property var frontArr
+    property var backArr
+    property var front
+    property var back
+    property var requestJava
+    property var ownerRoom
 
   id: root
   title.text: Backend.translate("en")
@@ -31,7 +37,7 @@ GraphicsBox {
     spacing: 5
 
     Text {
-      text: root.ch
+      text: root.frontArr[0]+" "+root.frontArr[2]
       color: "#E4D5A0"
       font.weight: Font.Bold // 设置字体加粗  
       font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
@@ -53,8 +59,12 @@ GraphicsBox {
                   // console.log("回车键被按下")
                   // 在这里添加你希望在按下回车键时执行的代码
                   Backend.playSound(mp3);
-                  const wordStr = Backend.getOneWord(word+","+input1.text);
-                  ClientInstance.replyToServer("", input1.text+","+wordStr);
+                  if(requestJava === "true"){
+                    const front_back = Backend.getOneWord(ownerRoom);
+                    ClientInstance.replyToServer("", input1.text+","+front_back);
+                  }else{
+                    ClientInstance.replyToServer("", input1.text);
+                  }
                   finished();
               }
           }
@@ -62,7 +72,7 @@ GraphicsBox {
               //color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
               //radius: 5  // 设置圆角半径
           //}
-          width: 400
+          width: 250
           height: 50
           font.weight: Font.Bold // 设置字体加粗 
           font.pixelSize: 30
@@ -72,19 +82,45 @@ GraphicsBox {
         Layout.fillWidth: true
         enabled: input1.text !== ""
         text: "OK"
-        width: 400
+        width: 100
         height: 50
         onClicked: {
           Backend.playSound(mp3);
-          const wordStr = Backend.getOneWord(word+","+input1.text);
-          // word + cn + word +back
-          ClientInstance.replyToServer("", input1.text+","+wordStr);
+          if(requestJava === "true"){
+            const front_back = Backend.getOneWord(ownerRoom);
+            // word + cn + word +back
+            ClientInstance.replyToServer("", input1.text+","+front_back);
+          }else{
+            ClientInstance.replyToServer("", input1.text);
+          }
           finished();
         }
         font.weight: Font.Bold // 设置字体加粗 
         font.pixelSize: 20
     }
-    
+
+        TextField {
+          id: input2
+          Layout.fillWidth: true
+          //placeholderText: 
+          //placeholderTextColor: "red"
+          text: root.frontArr[1]
+          color: "#E4D5A0"
+          Keys.onPressed: {
+              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                  
+              }
+          }
+          background: Rectangle {
+              color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
+              radius: 5  // 设置圆角半径
+          }
+          width: 700
+          height: 50
+          font.weight: Font.Bold // 设置字体加粗 
+          font.pixelSize: 30
+        }
+
     }
 
     BQVirtualKeyboard {
@@ -101,28 +137,31 @@ GraphicsBox {
 
 
     function processStringCh(str) {  
-        var parts = str.split("-xxxxxx-");  
-        word = parts[2].trim()
-        mp3 = "./audio/word/"+ parts[2].trim();
-        mp3Zh = "./audio/word/"+ parts[2].trim()+"_zh"
+        // front  .."-xxxxxx-"..  subStr .."-xxxxxx-".. back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom
+        var part0_2 = str.split("-xxxxxx-"); 
+        front = part0_2[0]
+        back =  part0_2[2]
+        frontArr = front.split(" ");
+        backArr = back.split(" ");
+        requestJava = part0_2[3]
+        ownerRoom = part0_2[4]
+        word =backArr[0].trim(); 
+        mp3 = "./audio/word/"+ word;
+        mp3Zh = "./audio/word/"+ word +"_zh"
         Backend.playSoundWav(mp3Zh);
-        return parts[0];  
+        return front;  
     }
 
     function processString(str) {  
-        var parts = str.split("-xxxxxx-");  
+        var part0_2 = str.split("-xxxxxx-");  
         var finalParts = [];  
-  
-        for (var i = 1; i < parts.length - 1; ++i) {  
-            var subParts = parts[i].split("_xxxxxx_");  
+        var subParts = part0_2[1].split("_xxxxxx_");  
             for (var j = 0; j < subParts.length; ++j) {  
                 var subPart = subParts[j].trim(); // 使用 trim() 来移除字符串两端的空白字符  
                 if (subPart !== "") { // 检查字符串是否为空  
                     finalParts.push(subPart);  
                 }  
             }  
-        }  
-  
         return finalParts;  
     }
 

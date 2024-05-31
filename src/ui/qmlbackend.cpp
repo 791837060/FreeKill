@@ -373,7 +373,7 @@ void QmlBackend::playSoundWav(const QString &name, int index) {
   player->play();
 }
 
-QString QmlBackend::getOneWord(const QString &word) {
+QString QmlBackend::getOneWord(const QString &ownerRoom) {
   //lua_State *L = ClientInstance->getLuaState();
   QNetworkAccessManager* manager = new QNetworkAccessManager(this);
   QUrl url("http://192.168.3.25:8000/api/wx/student/question/answer/xinyueshaTest");
@@ -389,8 +389,8 @@ QString QmlBackend::getOneWord(const QString &word) {
 
   // 构建 JSON 数据
   QJsonObject jsonObject;
-  jsonObject["key1"] = word; // 示例键值对
-  jsonObject["key2"] = word;
+  jsonObject["ownerRoom"] = ownerRoom; // 示例键值对
+  jsonObject["key2"] = ownerRoom;
 
   // 将 JSON 对象转换为字符串
   QJsonDocument jsonDocPar(jsonObject);
@@ -423,13 +423,15 @@ QString QmlBackend::getOneWord(const QString &word) {
                     if (value.isObject()) {
                         QJsonObject jsonObject = value.toObject();
                         // 获取"ch"和"en"字段的值
-                        QString ch = jsonObject["ch"].toString();
-                        QString en = jsonObject["en"].toString()+","+jsonObject["en2"].toString();
+                        //编号a	单词b	音标c	释义d	拆分e	综合法f	                联想法g	        例句h	                        翻译i
+                        //1	    ball	[bɔːl]	n.球	    ba+ll	ba爸(拼音)+ll筷子(象形)	爸爸用筷子夹球	The kid is playing the ball. 	孩子在玩皮球。
+                        QString front = jsonObject["ch"].toString(); // d f g
+                        QString back = jsonObject["en2"].toString();// b g f
                         //lua_pushstring(L,ch.toUtf8().constData());
                         //lua_pushstring(L,en.toUtf8().constData());
                         //lua_settable(L,-3);//弹出上两个，表在顶
                         // word + cn + word +back
-                        result  = ch +","+en;
+                        result  = front +","+back;
                     }
                 }
             } else {
