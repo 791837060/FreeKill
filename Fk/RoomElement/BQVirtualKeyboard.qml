@@ -49,7 +49,7 @@ Rectangle {
             Rectangle {
                 width: 110; height: 70
                 radius: 5
-                color: area1.pressed ? "#2A2826" : "#383533"
+                color: area0.pressed ? "#2A2826" : "#383533"
 
                 Text {
                     id: word_sub
@@ -57,7 +57,7 @@ Rectangle {
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area1.pressed ? "#5D4B37" : "#FFFFFF"
+                    color: area0.pressed ? "#5D4B37" : "#FFFFFF"
                     text: modelData
 
                     // 动态计算字体大小  
@@ -69,15 +69,18 @@ Rectangle {
                 }
 
                 MouseArea {
-                    id: area1
+                    id: area0
                     anchors.fill: parent
                     focus: false
                     onClicked: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
-                        Backend.playSoundWav(mp3Zh);
-                        word_sub.text = ""
+                        if (input1.text.length % 3 === 1) {  
+                            // 假设Backend是一个可以在QML中访问的对象，并且它有一个playSoundWav方法  
+                            Backend.playSoundWav(mp3Zh);  
+                        }  
+                        //word_sub.text = "";
                     }
                 }
             }
@@ -123,7 +126,10 @@ Rectangle {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
-                        
+                        if (modelData === "s") {  
+                            // 假设Backend是一个可以在QML中访问的对象，并且它有一个playSoundWav方法  
+                            Backend.playSoundWav(mp3Zh);  
+                        }
                     }
                 }
             }

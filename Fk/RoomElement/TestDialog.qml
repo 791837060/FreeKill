@@ -26,7 +26,7 @@ GraphicsBox {
     property var ownerRoom
 
   id: root
-  title.text: Backend.translate("en")
+  //title.text: Backend.translate("en")
   width: Math.max(140, body.width + 20)
   height: body.height + title.height + 20
 
@@ -36,13 +36,33 @@ GraphicsBox {
     y: title.height + 5
     spacing: 5
 
-    Text {
-      text: root.frontArr[0]+" "+root.frontArr[2]
-      color: "#E4D5A0"
-      font.weight: Font.Bold // 设置字体加粗  
-      font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
-      height: 35 // 根据字体大小设置合适的高度
+    //Text {
+      //text: root.frontArr[0]+" "+root.frontArr[2]
+      //color: "#E4D5A0"
+      //font.weight: Font.Bold // 设置字体加粗  
+      //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
+      //height: 35 // 根据字体大小设置合适的高度
+    //}
+
+    Row {  
+        spacing: 5
+        TextField {
+          id: input3
+          Layout.fillWidth: true
+          text: root.frontArr[0]+" "+root.frontArr[2]
+          color: "#E4D5A0"
+          Keys.onPressed: {
+              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                  
+              }
+          }
+          width: 1050
+          height: 50
+          font.weight: Font.Bold // 设置字体加粗 
+          font.pixelSize: 30
+        }
     }
+    
 
     Row {  
         spacing: 5
@@ -59,7 +79,7 @@ GraphicsBox {
                   // console.log("回车键被按下")
                   // 在这里添加你希望在按下回车键时执行的代码
                   Backend.playSound(mp3);
-                  if(requestJava === "true"){
+                  if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
                     const front_back = Backend.getOneWord(ownerRoom);
                     ClientInstance.replyToServer("", input1.text+","+front_back);
                   }else{
@@ -68,10 +88,6 @@ GraphicsBox {
                   finished();
               }
           }
-          //background: Rectangle {
-              //color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
-              //radius: 5  // 设置圆角半径
-          //}
           width: 250
           height: 50
           font.weight: Font.Bold // 设置字体加粗 
@@ -86,7 +102,7 @@ GraphicsBox {
         height: 50
         onClicked: {
           Backend.playSound(mp3);
-          if(requestJava === "true"){
+          if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
             const front_back = Backend.getOneWord(ownerRoom);
             // word + cn + word +back
             ClientInstance.replyToServer("", input1.text+","+front_back);
@@ -110,10 +126,6 @@ GraphicsBox {
               if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
                   
               }
-          }
-          background: Rectangle {
-              color: "royalblue"  // 设置背景颜色 royalblue 宝蓝
-              radius: 5  // 设置圆角半径
           }
           width: 700
           height: 50

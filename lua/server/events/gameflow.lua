@@ -363,12 +363,23 @@ function containsComma(str)
   return commaPos ~= nil  
 end 
 
+local input_front_back_cheng = "a"
+local input_front_back_jia = "a"
 local input_front_back = "a"
-local requestJava = "false"
-local ownerRoom = "false"
+local requestJava = ""
+local ownerRoom = ""
 function showWord(player,room)
+  print("player.id=", player.id)
+  print("room.room:getOwner():getId()=", room.room:getOwner():getId())
   if player.id == room.room:getOwner():getId() then
     ownerRoom = "true"
+  else
+    ownerRoom = "false"  
+  end
+  if ownerRoom == "true" then
+    input_front_back = input_front_back_cheng
+  else  
+    input_front_back = input_front_back_jia
   end  
   if string.find(room.wordList, "_free") ~= nil then
     return
@@ -396,6 +407,7 @@ function showWord(player,room)
   -- 原始字符串  
   local word = "abc"
     if (wordListVar == nil or next(wordListVar)) == nil then
+      requestJava = "false"
       -- print("roomName=", room.wordList,",", "_free=",string.find(room.wordList, "_free"))
       print("input_front_back=", input_front_back)
       if containsComma(input_front_back) then
@@ -490,23 +502,23 @@ function showWord(player,room)
             requestJava = "true"
           end
           print("msg = " .. msg)
-          input_front_back = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml",   msg)
-          print("input_front_back = ".. input_front_back)
+          local input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml",   msg)
+          print("input_front_back_result = ".. input_front_back_result)
           -- word + cn + word +back
-          local result = split(input_front_back,",")[1]
+          local result = split(input_front_back_result,",")[1]
           print(result)
-          if result == "aa" then
+          if result == "as" then
             print("msg = " .. msg)
-            input_front_back = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
-            print("input_front_back = ".. input_front_back)
-            result = split(input_front_back,",")[1]
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
+            print("input_front_back_result = ".. input_front_back_result)
+            result = split(input_front_back_result,",")[1]
             -- break
           end
           if result == "a" then
             print("msg = " .. msg)
-            input_front_back = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", msg)
-            print("input_front_back = ".. input_front_back)
-            result = split(input_front_back,",")[1]
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", msg)
+            print("input_front_back = ".. input_front_back_result)
+            result = split(input_front_back_result,",")[1]
             -- break
           end
            if result == "qwert" then
@@ -518,6 +530,11 @@ function showWord(player,room)
         
           print("...."..string.lower(result).."=="..string.lower(word))
           if string.lower(remove_spaces(result)) == string.lower(remove_spaces(word)) then
+            if ownerRoom == "true" then
+              input_front_back_cheng = input_front_back_result
+            else  
+              input_front_back_jia = input_front_back_result
+            end
             break
           end
           -- coroutine.yield("__handleRequest", 31536000000)
