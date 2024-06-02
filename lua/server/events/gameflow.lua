@@ -507,7 +507,14 @@ function showWord(player,room)
           -- word + cn + word +back
           local result = split(input_front_back_result,",")[1]
           print(result)
-          if result == "as" then
+          if result == "nm" then
+            print("msg = " .. msg)
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
+            print("input_front_back_result = ".. input_front_back_result)
+            result = split(input_front_back_result,",")[1]
+            -- break
+          end
+          if result == "aa" then
             print("msg = " .. msg)
             input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
             print("input_front_back_result = ".. input_front_back_result)

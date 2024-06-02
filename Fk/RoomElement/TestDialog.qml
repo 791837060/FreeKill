@@ -36,32 +36,32 @@ GraphicsBox {
     y: title.height + 5
     spacing: 5
 
-    //Text {
-      //text: root.frontArr[0]+" "+root.frontArr[2]
-      //color: "#E4D5A0"
-      //font.weight: Font.Bold // 设置字体加粗  
-      //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
-      //height: 35 // 根据字体大小设置合适的高度
-    //}
-
-    Row {  
-        spacing: 5
-        TextField {
-          id: input3
-          Layout.fillWidth: true
+      Text {
           text: root.frontArr[0]+" "+root.frontArr[2]
           color: "#E4D5A0"
-          Keys.onPressed: {
-              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                  
-              }
-          }
-          width: 1050
-          height: 50
-          font.weight: Font.Bold // 设置字体加粗 
-          font.pixelSize: 30
+          font.weight: Font.Bold // 设置字体加粗  
+          //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+          font.pointSize: 14
+          height: 35 // 根据字体大小设置合适的高度
         }
-    }
+
+        Text {
+          text: root.frontArr[0]+" "+root.frontArr[2]
+          color: "#E4D5A0"
+          font.weight: Font.Bold // 设置字体加粗  
+          //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+          font.pointSize: 14
+          height: 35 // 根据字体大小设置合适的高度
+        }
+      
+      Text {
+          text: root.frontArr[0]+" "+root.frontArr[2]
+          color: "#E4D5A0"
+          font.weight: Font.Bold // 设置字体加粗  
+          //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+          font.pointSize: 14
+          height: 35 // 根据字体大小设置合适的高度
+        }
     
 
     Row {  
@@ -70,6 +70,7 @@ GraphicsBox {
         TextField {
           id: input1
           Layout.fillWidth: true
+          Layout.fillHeight: true
           //placeholderText: qsTr("w")
           //placeholderTextColor: "red"
           text: ""
@@ -88,10 +89,21 @@ GraphicsBox {
                   finished();
               }
           }
-          width: 250
-          height: 50
-          font.weight: Font.Bold // 设置字体加粗 
-          font.pixelSize: 30
+          //width: 250
+          //height: 50
+          //font.weight: Font.Bold // 设置字体加粗 
+          //font.pixelSize: 30
+          font.pointSize: 14
+        }
+        
+
+        Text {
+          text: input1.text
+          color: "#E4D5A0"
+          font.weight: Font.Bold // 设置字体加粗  
+          //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+          font.pointSize: 14
+          height: 35 // 根据字体大小设置合适的高度
         }
 
     Button {
@@ -112,26 +124,21 @@ GraphicsBox {
           finished();
         }
         font.weight: Font.Bold // 设置字体加粗 
-        font.pixelSize: 20
+        //font.pixelSize: 20
+        font.pointSize: 10
     }
 
-        TextField {
-          id: input2
-          Layout.fillWidth: true
-          //placeholderText: 
-          //placeholderTextColor: "red"
+  
+        Text {
           text: root.frontArr[1]
           color: "#E4D5A0"
-          Keys.onPressed: {
-              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                  
-              }
-          }
-          width: 700
-          height: 50
-          font.weight: Font.Bold // 设置字体加粗 
-          font.pixelSize: 30
+          font.weight: Font.Bold // 设置字体加粗  
+          //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+          font.pointSize: 14
+          height: 35 // 根据字体大小设置合适的高度
         }
+
+        
 
     }
 
