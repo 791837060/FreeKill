@@ -259,7 +259,7 @@ Item {  //row Item
 
      Item { //Column Item 
          width: 1010 // 根据需要设置宽度  
-         height: 360 // 根据需要设置高度  
+         height: 360 // 根据需要设置高度 
 
     BQVirtualKeyboard {
         id: virtualKeyboard
