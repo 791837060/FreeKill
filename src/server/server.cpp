@@ -371,7 +371,7 @@ void Server::handleNameAndPassword(ClientSocket *client, const QString &name,
   }
 
 
-  // if (false) {
+ //if (false) {
   if (md5 != md5_str) {
     QJsonArray body;
     body << -2;

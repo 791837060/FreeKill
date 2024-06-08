@@ -24,6 +24,7 @@ GraphicsBox {
     property var back
     property var requestJava
     property var ownerRoom
+    property var front_back
 
   id: root
   //title.text: Backend.translate("en")
@@ -34,119 +35,244 @@ GraphicsBox {
     id: body
     x: 10
     y: title.height + 5
-    spacing: 5
+    spacing: 10
 
-    //Text {
-      //text: root.frontArr[0]+" "+root.frontArr[2]
-      //color: "#E4D5A0"
-      //font.weight: Font.Bold // 设置字体加粗  
-      //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体
-      //height: 35 // 根据字体大小设置合适的高度
-    //}
-
-    Row {  
-        spacing: 5
-        TextField {
-          id: input3
-          Layout.fillWidth: true
-          text: root.frontArr[0]+" "+root.frontArr[2]
-          color: "#E4D5A0"
-          Keys.onPressed: {
-              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                  
-              }
-          }
-          width: 1050
-          height: 50
-          font.weight: Font.Bold // 设置字体加粗 
-          font.pixelSize: 30
-        }
-    }
     
 
-    Row {  
-        spacing: 5
-        
-        TextField {
-          id: input1
-          Layout.fillWidth: true
-          //placeholderText: qsTr("w")
-          //placeholderTextColor: "red"
-          text: ""
-          color: "#E4D5A0"
-          Keys.onPressed: {
-              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
-                  // console.log("回车键被按下")
-                  // 在这里添加你希望在按下回车键时执行的代码
-                  Backend.playSound(mp3);
-                  if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
-                    const front_back = Backend.getOneWord(ownerRoom);
-                    ClientInstance.replyToServer("", input1.text+","+front_back);
-                  }else{
-                    ClientInstance.replyToServer("", input1.text);
-                  }
-                  finished();
+    Item {  //Column Item
+        width: 1050 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度  
+  
+              Text {
+                anchors.fill: parent // 填充整个 Item  
+                verticalAlignment: Text.AlignVCenter // 文本垂直居中  
+                horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
+                text: "["+root.frontArr[2]+"]   "+root.frontArr[0]
+                color: "red"
+                font.weight: Font.Bold // 设置字体加粗  
+                //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+                font.pointSize: 30
+                height: 35 // 根据字体大小设置合适的高度
               }
-          }
-          width: 250
-          height: 50
-          font.weight: Font.Bold // 设置字体加粗 
-          font.pixelSize: 30
-        }
+    }  //Column Item
 
-    Button {
-        Layout.fillWidth: true
-        enabled: input1.text !== ""
-        text: "OK"
-        width: 100
-        height: 50
-        onClicked: {
-          Backend.playSound(mp3);
-          if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
-            const front_back = Backend.getOneWord(ownerRoom);
-            // word + cn + word +back
-            ClientInstance.replyToServer("", input1.text+","+front_back);
-          }else{
-            ClientInstance.replyToServer("", input1.text);
-          }
-          finished();
-        }
-        font.weight: Font.Bold // 设置字体加粗 
-        font.pixelSize: 20
-    }
+    Item {  //Column Item
+        width: 1050 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度  
+  
+              Text {
+                anchors.fill: parent // 填充整个 Item  
+                verticalAlignment: Text.AlignVCenter // 文本垂直居中  
+                horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
+                text: "["+root.frontArr[2]+"]   "+root.frontArr[0]
+                color: "red"
+                font.weight: Font.Bold // 设置字体加粗  
+                //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+                font.pointSize: 30
+                height: 35 // 根据字体大小设置合适的高度
+              }
+    }  //Column Item
 
-        TextField {
-          id: input2
-          Layout.fillWidth: true
-          //placeholderText: 
-          //placeholderTextColor: "red"
-          text: root.frontArr[1]
+    Item {  //Column Item
+        width: 1050 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度  
+  
+        Text {
+          anchors.fill: parent // 填充整个 Item  
+          verticalAlignment: Text.AlignVCenter // 文本垂直居中  
+          horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
+          text: root.frontArr[0]+"   ["+root.frontArr[2]+"]"
           color: "#E4D5A0"
-          Keys.onPressed: {
-              if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+          font.weight: Font.Bold // 设置字体加粗  
+          //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+          font.pointSize: 30
+          height: 35 // 根据字体大小设置合适的高度
+        }
+    } //Column Item 
+
+
+      
+
+    Item {  //Column Item
+        width: 1050 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度  
+  
+        Row {  
+          spacing: 5
+          Item { //row Item  
+        width: 0 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度 
+          TextField {
+            visible: false
+            id: input1
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            //placeholderText: qsTr("w")
+            //placeholderTextColor: "red"
+            text: ""
+            color: "#E4D5A0"
+            Keys.onPressed: {
+                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                    // console.log("回车键被按下")
+                    // 在这里添加你希望在按下回车键时执行的代码
+                    
+                    if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
+                      front_back = Backend.getOneWord(ownerRoom, word.trim());
+                      ClientInstance.replyToServer("", input1.text+","+front_back);
+                    }else{
+                      ClientInstance.replyToServer("", input1.text);
+                    }
+                    finished();
+                    Backend.playSound(mp3); 
+                }
+            }
+            width: 0
+            //height: 50
+            //font.weight: Font.Bold // 设置字体加粗 
+            //font.pixelSize: 30
+            font.pointSize: 28
+          }
+          } //row Item 
+
+
+Item { //row Item  
+        width: 950 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度 
+          Text {
+            anchors.fill: parent // 填充整个 Item  
+            verticalAlignment: Text.AlignVCenter // 文本垂直居中  
+            horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
+            text: input1.text
+            color: textColor
+            font.weight: Font.Bold // 设置字体加粗  
+            //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+            font.pointSize: 30
+            height: 35 // 根据字体大小设置合适的高度
+            // 使用JavaScript表达式来更新textColor属性  
+              Component.onCompleted: {  
+                  function updateTextColor() {  
+                      //if (input1.text.trim().toLowerCase() === "name".trim().toLowerCase()) {  
+                          //textColor = "green";  
+                      //} else {  
+                          //textColor = "red";  
+                      //}  
+
+                      var inputText = input1.text.trim().toLowerCase();  
+                      var name = word.trim().toLowerCase(); // 假设name是一个已知的字符串，您可能需要根据实际情况修改  
+                      var minLength = Math.min(inputText.length, name.length);  
+            
+                      // 检查input1的文本和name的每个字符是否相等  
+                      var isEqual = true;  
+                      for (var i = 0; i < minLength; ++i) {  
+                          if (inputText[i] !== name[i]) {  
+                              isEqual = false;  
+                              break;  
+                          }  
+                      }  
+            
+                      // 根据比较结果设置Text的颜色  
+                      if (inputText.length > name.length) {  
+                          textColor = "red";  
+                      } else if (isEqual) {  
+                          textColor = "green";  
+                      } else {  
+                          textColor = "red";  
+                      }
+
+                      if(input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
                   
-              }
+                        if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
+                          front_back = Backend.getOneWord(ownerRoom, word.trim());
+                          ClientInstance.replyToServer("", input1.text+","+front_back);
+                        }else{
+                          ClientInstance.replyToServer("", input1.text);
+                        }
+                        finished();
+                        Backend.playSound(mp3); 
+                      }
+                  }  
+        
+                  // 当input1的文本改变时，更新颜色  
+                  input1.textChanged.connect(updateTextColor);  
+        
+                  // 初始设置颜色  
+                  updateTextColor();  
+              }  
+        
+              // 定义textColor属性  
+              property color textColor: "red" // 初始颜色为红色
           }
-          width: 700
-          height: 50
-          font.weight: Font.Bold // 设置字体加粗 
-          font.pixelSize: 30
-        }
+}//row Item 
 
-    }
+
+Item {  //row Item 
+        width: 100 // 根据需要设置宽度  
+        height: 35 // 根据需要设置高度 
+      Button {
+          Layout.fillWidth: true
+          enabled: input1.text !== ""
+          text: "OK"
+          width: 100
+          height: 50
+          onClicked: {
+            
+            if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
+              // word + cn + word +back
+              ClientInstance.replyToServer("", input1.text+","+front_back);
+              front_back = Backend.getOneWord(ownerRoom, word.trim());
+            }else{
+              ClientInstance.replyToServer("", input1.text);
+            }
+            finished();
+            Backend.playSound(mp3); 
+          }
+          font.weight: Font.Bold // 设置字体加粗 
+          //font.pixelSize: 20
+          font.pointSize: 10
+      }
+}//row Item 
+    
+    
+   
+       
+
+      } //row end
+    } //Column Item end  
+        
+     
+     Item {//Column Item   
+         width: 1050 // 根据需要设置宽度  
+         height: 35 // 根据需要设置高度  
+         Text {
+            text: root.frontArr[1]
+            anchors.fill: parent // 填充整个 Item  
+            verticalAlignment: Text.AlignVCenter // 文本垂直居中  
+            horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
+            color: "red"
+            font.weight: Font.Bold // 设置字体加粗  
+            //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
+            font.pointSize: 30
+            height: 35 // 根据字体大小设置合适的高度
+          }
+    
+    }//Column Item 
+
+     Item { //Column Item 
+         width: 1010 // 根据需要设置宽度  
+         height: 360 // 根据需要设置高度  
 
     BQVirtualKeyboard {
         id: virtualKeyboard
-        y: 110
+        y: 0
         anchors.horizontalCenter: parent.horizontalCenter
         visible: input1.hasFocus
     }
-  }
+     } //Column Item
+  } //Column end
 
   function loadData(data) {
     custom_string = data;
   }
-
 
     function processStringCh(str) {  
         // front  .."-xxxxxx-"..  subStr .."-xxxxxx-".. back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom
@@ -160,7 +286,7 @@ GraphicsBox {
         word =backArr[0].trim(); 
         mp3 = "./audio/word/"+ word;
         mp3Zh = "./audio/word/"+ word +"_zh"
-        Backend.playSoundWav(mp3Zh);
+        Backend.playSound(mp3);
         return front;  
     }
 

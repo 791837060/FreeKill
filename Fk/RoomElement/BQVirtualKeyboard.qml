@@ -77,7 +77,7 @@ Rectangle {
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
                         if (input1.text.length % 3 === 1) {  
-                            // 假设Backend是一个可以在QML中访问的对象，并且它有一个playSoundWav方法  
+                            
                             Backend.playSoundWav(mp3Zh);  
                         }  
                         //word_sub.text = "";
@@ -126,7 +126,7 @@ Rectangle {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
-                        if (modelData === "s") {  
+                        if (input1.text === "nm") {  
                             // 假设Backend是一个可以在QML中访问的对象，并且它有一个playSoundWav方法  
                             Backend.playSoundWav(mp3Zh);  
                         }
@@ -187,33 +187,32 @@ Rectangle {
         anchors.horizontalCenter: parent.horizontalCenter
         spacing: 5
 
-        // shift
+        // clear
         Rectangle {
             width: 95; height: 70
             radius: 5
-            color: area_shift.pressed ? "#2A2826" : "#383533"
+            color: area_clear.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
                 font.weight: Font.Bold // 设置字体加粗 
-                font.pixelSize: 32
+                    font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_shift.pressed ? "#5D4B37" : (isEnglish && isUpper ? "#239B56" : "#FFFFFF")
-                text: isEnglish ? "Shift" : (page == 1 ? "1/2" : "2/2")
+                color: area_clear.pressed ? "#5D4B37" : "#FFFFFF"
+                text: languageType == 1 ? "清 空" : "Clear"
             }
 
             MouseArea {
-                id: area_shift
+                id: area_clear
                 anchors.fill: parent
                 focus: false
                 onClicked: {
-                    if (isEnglish) {
-                        isUpper = !isUpper
-                    } else {
-                        page == 1 ? (page = 2) : (page = 1)
-                    }
+                    //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
+                    //focusedItem.text = ""
+                    input1.text = ""
+                    
                 }
             }
         }
@@ -349,32 +348,35 @@ Rectangle {
             }
         }
 
-        // clear
+        
+
+        // shift
         Rectangle {
             width: 95; height: 70
             radius: 5
-            color: area_clear.pressed ? "#2A2826" : "#383533"
+            color: area_shift.pressed ? "#2A2826" : "#383533"
 
             Text {
                 anchors.fill: parent
                 font.weight: Font.Bold // 设置字体加粗 
-                    font.pixelSize: 32
+                font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_clear.pressed ? "#5D4B37" : "#FFFFFF"
-                text: languageType == 1 ? "清 空" : "Clear"
+                color: area_shift.pressed ? "#5D4B37" : (isEnglish && isUpper ? "#239B56" : "#FFFFFF")
+                text: isEnglish ? "Shift" : (page == 1 ? "1/2" : "2/2")
             }
 
             MouseArea {
-                id: area_clear
+                id: area_shift
                 anchors.fill: parent
                 focus: false
                 onClicked: {
-                    //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                    //focusedItem.text = ""
-                    input1.text = ""
-                    
+                    if (isEnglish) {
+                        isUpper = !isUpper
+                    } else {
+                        page == 1 ? (page = 2) : (page = 1)
+                    }
                 }
             }
         }
@@ -408,7 +410,13 @@ Rectangle {
                     // 例如：virtualKeyboard.visible = false; 假设virtualKeyboard是你的键盘组件的id 
                     // console.log("回车键被按下")
                     // 在这里添加你希望在按下回车键时执行的代码
-                    ClientInstance.replyToServer("", input1.text);
+
+                    if(root.requestJava === "true" && input1.text.trim().toLowerCase() === root.word.trim().toLowerCase()){
+                        ClientInstance.replyToServer("", input1.text+","+root.front_back);
+                        root.front_back = Backend.getOneWord(root.ownerRoom, root.word.trim());
+                    }else{
+                        ClientInstance.replyToServer("", input1.text);
+                    }
                     finished(); 
                 }  
             }  

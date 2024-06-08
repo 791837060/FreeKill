@@ -255,6 +255,34 @@ GameEvent.cleaners[GameEvent.Turn] = function(self)
   end
 end
 
+
+
+local wordSound = "October";
+local lastSoundPlayTime = 0 -- 初始化为0或者上一次系统时间
+-- wordSound .. "_zh" playSoundIfAllowed(room, wordSound .. "_zh")
+function playSoundIfAllowed(room, wordSound)  
+  local currentTime = os.time() -- 获取当前系统时间（秒为单位）  
+  local timeSinceLastPlay = currentTime - lastSoundPlayTime -- 计算自上次播放以来的时间差 
+  if timeSinceLastPlay >= 10 then -- 如果距离上次播放已经超过10秒
+    -- 使用math.random生成一个0到1之间的随机数  
+    local randomNumber = math.random()  
+    -- 检查随机数是否小于或等于0.5（即50%的几率）  
+    if randomNumber <= 0.5 then  
+      -- 如果条件为真，播放声音  
+      room:broadcastPlaySoundWav("./audio/word/" .. wordSound .. "_zh")
+      lastSoundPlayTime = currentTime -- 更新上次播放时间
+    else  
+      room:broadcastPlaySound("./audio/word/" .. wordSound)
+      lastSoundPlayTime = currentTime -- 更新上次播放时间
+    end  
+    if string.find(wordSound, "_zh") ~= nil then
+      
+    else
+      
+    end 
+  end 
+end
+
 GameEvent.functions[GameEvent.Phase] = function(self)
   local room = self.room
   local logic = room.logic
@@ -267,15 +295,19 @@ GameEvent.functions[GameEvent.Phase] = function(self)
       switch(player.phase, {
       [Player.PhaseNone] = function()
         error("You should never proceed PhaseNone")
+        playSoundIfAllowed(room, wordSound)
       end,
       [Player.RoundStart] = function()
-
+        playSoundIfAllowed(room, wordSound)
       end,
       [Player.Start] = function()
         -- print("这是开始回合")
-        -- showWord(player,room)
+        wordSound = showWord(player,room)
+        playSoundIfAllowed(room, wordSound)
       end,
       [Player.Judge] = function()
+        -- 判定
+        playSoundIfAllowed(room, wordSound) 
         local cards = player:getCardIds(Player.Judge)
         for i = #cards, 1, -1 do
           local card
@@ -298,6 +330,7 @@ GameEvent.functions[GameEvent.Phase] = function(self)
         end
       end,
       [Player.Draw] = function()
+        playSoundIfAllowed(room, wordSound)
         local data = {
           n = 2
         }
@@ -313,13 +346,20 @@ GameEvent.functions[GameEvent.Phase] = function(self)
           local result = room:doRequest(player, "PlayCard", player.id)
           if result == "" then
           -- print("这是出牌结束按钮")
-            showWord(player,room)
+            wordSound = showWord(player,room)
             break
           end
 
           local use = room:handleUseCardReply(player, result)
           if use then
             room:useCard(use)
+            print("这是出牌 wordSound = " .. wordSound)
+            playSoundIfAllowed(room, wordSound)
+            if player.id < 0 then -- Robot
+              
+            else
+              
+            end  
           end
 
           if player._play_phase_end then
@@ -329,6 +369,7 @@ GameEvent.functions[GameEvent.Phase] = function(self)
         end
       end,
       [Player.Discard] = function()
+        playSoundIfAllowed(room, wordSound)
         local discardNum = #table.filter(
           player:getCardIds(Player.Hand), function(id)
             local card = Fk:getCardById(id)
@@ -342,7 +383,7 @@ GameEvent.functions[GameEvent.Phase] = function(self)
         end
       end,
       [Player.Finish] = function()
-
+        playSoundIfAllowed(room, wordSound)
       end,
       })
     end
@@ -368,6 +409,7 @@ local input_front_back_jia = "a"
 local input_front_back = "a"
 local requestJava = ""
 local ownerRoom = ""
+local wordResult = "school"
 function showWord(player,room)
   print("player.id=", player.id)
   print("room.room:getOwner():getId()=", room.room:getOwner():getId())
@@ -507,7 +549,14 @@ function showWord(player,room)
           -- word + cn + word +back
           local result = split(input_front_back_result,",")[1]
           print(result)
-          if result == "as" then
+          if result == "nm" then
+            print("msg = " .. msg)
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
+            print("input_front_back_result = ".. input_front_back_result)
+            result = split(input_front_back_result,",")[1]
+            -- break
+          end
+          if result == "aa" then
             print("msg = " .. msg)
             input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
             print("input_front_back_result = ".. input_front_back_result)
@@ -535,6 +584,7 @@ function showWord(player,room)
             else  
               input_front_back_jia = input_front_back_result
             end
+            wordResult = word;
             break
           end
           -- coroutine.yield("__handleRequest", 31536000000)
@@ -545,6 +595,7 @@ function showWord(player,room)
   else
       -- print("str1 does not contain str2")
   end
+  return wordResult;
 end
 
 function remove_spaces(str)  

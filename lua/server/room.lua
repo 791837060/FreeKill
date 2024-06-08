@@ -1003,6 +1003,12 @@ function Room:broadcastPlaySound(path)
   })
 end
 
+function Room:broadcastPlaySoundWav(path)
+  self:sendLogEvent("PlaySoundWav", {
+    name = path,
+  })
+end
+
 --- 在player的脸上播放技能发动的特效。
 ---
 --- 与此同时，在战报里面发一条“xxx发动了xxx”

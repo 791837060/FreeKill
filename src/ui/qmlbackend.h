@@ -45,7 +45,7 @@ public:
   Q_INVOKABLE QString pubEncrypt(const QString &key, const QString &data);
   Q_INVOKABLE QString loadConf();
   Q_INVOKABLE QString loadTips();
-  Q_INVOKABLE QString getOneWord(const QString &ownerRoom);
+  Q_INVOKABLE QString getOneWord(const QString &ownerRoom, const QString &rightWord);
   Q_INVOKABLE void saveConf(const QString &conf);
 
   Q_INVOKABLE void replyDelayTest(const QString &screenName, const QString &cipher);

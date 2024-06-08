@@ -373,7 +373,7 @@ void QmlBackend::playSoundWav(const QString &name, int index) {
   player->play();
 }
 
-QString QmlBackend::getOneWord(const QString &ownerRoom) {
+QString QmlBackend::getOneWord(const QString &ownerRoom, const QString &rightWord) {
   //lua_State *L = ClientInstance->getLuaState();
   QNetworkAccessManager* manager = new QNetworkAccessManager(this);
   QUrl url("http://192.168.3.25:8000/api/wx/student/question/answer/xinyueshaTest");
@@ -390,7 +390,7 @@ QString QmlBackend::getOneWord(const QString &ownerRoom) {
   // 构建 JSON 数据
   QJsonObject jsonObject;
   jsonObject["ownerRoom"] = ownerRoom; // 示例键值对
-  jsonObject["key2"] = ownerRoom;
+  jsonObject["rightWord"] = rightWord;
 
   // 将 JSON 对象转换为字符串
   QJsonDocument jsonDocPar(jsonObject);

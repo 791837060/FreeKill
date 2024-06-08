@@ -1413,6 +1413,10 @@ callbacks["LogEvent"] = (jsonData) => {
       Backend.playSound(data.name);
       break;
     }
+    case "PlaySoundWav": {
+      Backend.playSoundWav(data.name);
+      break;
+    }
     case "Death": {
       const item = getPhoto(data.to);
       const extension = JSON.parse(Backend.callLuaFunction("GetGeneralData", [item.general])).extension;
