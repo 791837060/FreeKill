@@ -10,10 +10,10 @@ GraphicsBox {
     // 假设我们有一个包含多个单词的字符串  
     // -xxxxxx-
     // _xxxxxx_ 拆分字母
-    property var ch: processStringCh(custom_string)
+    property var ch: processStringCh(front_back)
   
     // 使用空格作为分隔符拆分字符串为单词数组  
-    property var en_line0_lower: processString(custom_string)
+    property var en_line0_lower: processString(front_back)
 
     property var mp3
     property var mp3Zh
@@ -23,11 +23,12 @@ GraphicsBox {
     property var front
     property var back
     property var requestJava
-    property var ownerRoom
+    property var part0_2
     property var front_back
 
   id: root
   //title.text: Backend.translate("en")
+  title.text: front
   width: Math.max(140, body.width + 20)
   height: body.height + title.height + 20
 
@@ -112,16 +113,10 @@ GraphicsBox {
             text: ""
             color: "#E4D5A0"
             Keys.onPressed: {
-                if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                if (event.key == Qt.Key_Return || event.key == Qt.Key_Enter) {
                     // console.log("回车键被按下")
                     // 在这里添加你希望在按下回车键时执行的代码
-                    
-                    if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
-                      front_back = Backend.getOneWord(ownerRoom, word.trim());
-                      ClientInstance.replyToServer("", input1.text+","+front_back);
-                    }else{
-                      ClientInstance.replyToServer("", input1.text);
-                    }
+                    ClientInstance.replyToServer("", input1.text+","+front_back);
                     finished();
                     Backend.playSound(mp3); 
                 }
@@ -151,7 +146,7 @@ Item { //row Item
             // 使用JavaScript表达式来更新textColor属性  
               Component.onCompleted: {  
                   function updateTextColor() {  
-                      //if (input1.text.trim().toLowerCase() === "name".trim().toLowerCase()) {  
+                      //if (input1.text.trim().toLowerCase() == "name".trim().toLowerCase()) {  
                           //textColor = "green";  
                       //} else {  
                           //textColor = "red";  
@@ -179,14 +174,8 @@ Item { //row Item
                           textColor = "red";  
                       }
 
-                      if(input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
-                  
-                        if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
-                          front_back = Backend.getOneWord(ownerRoom, word.trim());
-                          ClientInstance.replyToServer("", input1.text+","+front_back);
-                        }else{
-                          ClientInstance.replyToServer("", input1.text);
-                        }
+                      if(input1.text.trim().toLowerCase() == word.trim().toLowerCase()){
+                        ClientInstance.replyToServer("", input1.text+","+front_back);
                         finished();
                         Backend.playSound(mp3); 
                       }
@@ -216,13 +205,7 @@ Item {  //row Item
           height: 50
           onClicked: {
             
-            if(requestJava === "true" && input1.text.trim().toLowerCase() === word.trim().toLowerCase()){
-              // word + cn + word +back
-              ClientInstance.replyToServer("", input1.text+","+front_back);
-              front_back = Backend.getOneWord(ownerRoom, word.trim());
-            }else{
-              ClientInstance.replyToServer("", input1.text);
-            }
+            ClientInstance.replyToServer("", input1.text+","+front_back);
             finished();
             Backend.playSound(mp3); 
           }
@@ -271,36 +254,102 @@ Item {  //row Item
   } //Column end
 
   function loadData(data) {
-    custom_string = data;
+     custom_string = data;
+     part0_2 = custom_string.split("-xxxxxx-"); 
+     requestJava = part0_2[3]
+     if(requestJava == "true"){
+       front_back = Backend.getOneWord("no", "no");
+     }else{
+       front_back = part0_2[5];
+     }
   }
 
     function processStringCh(str) {  
-        // front  .."-xxxxxx-"..  subStr .."-xxxxxx-".. back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom
-        var part0_2 = str.split("-xxxxxx-"); 
-        front = part0_2[0]
-        back =  part0_2[2]
-        frontArr = front.split(" ");
-        backArr = back.split(" ");
-        requestJava = part0_2[3]
-        ownerRoom = part0_2[4]
-        word =backArr[0].trim(); 
-        mp3 = "./audio/word/"+ word;
-        mp3Zh = "./audio/word/"+ word +"_zh"
+        if(requestJava == "true"){
+          // vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
+          var front_and_backArr = str.split("_=front_xxxxxxxxxx_back=_"); 
+          front = front_and_backArr[0]
+          back =  front_and_backArr[1]
+          frontArr = front.split(" ");
+          backArr = back.split(" ");
+          word =backArr[0].trim(); 
+          mp3 = "./audio/word/"+ word;
+          mp3Zh = "./audio/word/"+ word +"_zh"
+        }else{
+          front = part0_2[0]
+          back =  part0_2[2]
+          frontArr = front.split(" ");
+          backArr = back.split(" ");
+          ownerRoom = part0_2[4]
+          word =backArr[0].trim(); 
+          mp3 = "./audio/word/"+ word;
+          mp3Zh = "./audio/word/"+ word +"_zh"
+        }
         Backend.playSound(mp3);
         return front;  
     }
 
-    function processString(str) {  
-        var part0_2 = str.split("-xxxxxx-");  
-        var finalParts = [];  
-        var subParts = part0_2[1].split("_xxxxxx_");  
+     function shuffleArray(array) {
+        // 打乱数组顺序（Fisher-Yates 洗牌算法）
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];  // 交换元素
+        }
+    }
+
+    function processString(str) {
+         // vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
+          var front_and_backArr = str.split("_=front_xxxxxxxxxx_back=_"); 
+          front = front_and_backArr[0]
+          back =  front_and_backArr[1]
+          frontArr = front.split(" ");
+          backArr = back.split(" ");
+          word =backArr[0].trim(); 
+          
+            var finalParts = [];  
+            var subParts = splitWordAndAddLetters(word);  
             for (var j = 0; j < subParts.length; ++j) {  
                 var subPart = subParts[j].trim(); // 使用 trim() 来移除字符串两端的空白字符  
                 if (subPart !== "") { // 检查字符串是否为空  
                     finalParts.push(subPart);  
                 }  
             }  
-        return finalParts;  
+            return finalParts;  
+        
+    }
+
+    function splitWordAndAddLetters(word) {
+        // 拆分单词成字母数组
+        let letters = word.split('');
+
+        // 如果字母数量少于6个，随机添加3个不重复字母
+        if (letters.length < 7) {
+            const lettersToAdd = generateRandomLetters(7 - letters.length);  // 获取所需的随机字母
+            letters = letters.concat(lettersToAdd);
+        }
+
+        // 打乱字母顺序
+        shuffleArray(letters);
+        return letters;
+    }
+
+    function generateRandomLetters(numLetters) {
+        const alphabet = "abcdefghijklmnopqrstuvwxyz";  // 可选：使用大写字母
+        const randomLetters = [];
+        const usedLetters = new Set();
+
+        while (randomLetters.length < numLetters) {
+            const randomIndex = Math.floor(Math.random() * alphabet.length);
+            const letter = alphabet[randomIndex];
+
+            // 确保字母不重复
+            if (!usedLetters.has(letter)) {
+                randomLetters.push(letter);
+                usedLetters.add(letter);
+            }
+        }
+
+        return randomLetters;
     }
 
     //BQVirtualKeyboard {

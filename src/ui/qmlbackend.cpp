@@ -431,7 +431,7 @@ QString QmlBackend::getOneWord(const QString &ownerRoom, const QString &rightWor
                         //lua_pushstring(L,en.toUtf8().constData());
                         //lua_settable(L,-3);//弹出上两个，表在顶
                         // word + cn + word +back
-                        result  = front +","+back;
+                        result  = front +"_=front_xxxxxxxxxx_back=_"+back;
                     }
                 }
             } else {

@@ -400,16 +400,57 @@ function shuffleTable(t)
 end  
 
 function containsComma(str)  
-  local commaPos = string.find(str, ",")  
+  local commaPos = string.find(str, "_=front_xxxxxxxxxx_back=_")  
   return commaPos ~= nil  
 end 
 
-local input_front_back_cheng = "a"
-local input_front_back_jia = "a"
-local input_front_back = "a"
-local requestJava = ""
+
+local input_front_back = ""
 local ownerRoom = ""
-local wordResult = "school"
+local wordSound = ""
+
+function splitWord(word)
+   -- local word = "abc"
+   -- 将字符串拆分成字符表  
+  local charTable = {}  
+  for i = 1, #word do  
+      table.insert(charTable, word:sub(i, i))  
+  end
+  
+  -- 如果字符表少于6个元素，随机添加3个不重复的字母  
+  local alphabet = "abcdefghijklmnopqrstuvwxyz" -- 字母表  
+  local availableLetters = {} -- 存储还未添加到charTable的字母  
+  for i = 1, #alphabet do  
+      table.insert(availableLetters, alphabet:sub(i, i))  
+  end  
+    
+  -- 需要添加的字母数量  
+  local numToAdd = math.max(0, 7 - #charTable)  
+    
+  -- 随机添加字母，直到达到所需数量  
+  for _ = 1, numToAdd do  
+      local randomIndex = math.random(1, #availableLetters)  
+      local randomLetter = availableLetters[randomIndex]  
+      table.insert(charTable, randomLetter)  
+      table.remove(availableLetters, randomIndex) -- 从可用字母列表中移除已添加的字母  
+  end 
+    
+  -- 打乱字符顺序  
+  shuffleTable(charTable)  
+    
+  -- 连接字符串的辅助字符串  
+  local connectorString = "_xxxxxx_"
+    
+  -- 构建最终字符串  
+  local subStr = ""  
+  for i = 1, #charTable do  
+    -- 添加打乱后的字符  
+    subStr = subStr .. charTable[i]  
+    subStr = subStr .. connectorString   
+  end
+  return subStr
+end
+
 function showWord(player,room)
   print("player.id=", player.id)
   print("room.room:getOwner():getId()=", room.room:getOwner():getId())
@@ -418,11 +459,6 @@ function showWord(player,room)
   else
     ownerRoom = "false"  
   end
-  if ownerRoom == "true" then
-    input_front_back = input_front_back_cheng
-  else  
-    input_front_back = input_front_back_jia
-  end  
   if string.find(room.wordList, "_free") ~= nil then
     return
   end  
@@ -442,19 +478,17 @@ function showWord(player,room)
     -- print("insertWordListBack1")
   else   
   end
-  -- 编号a	单词b	音标c	   释义d	   拆分e	综合法f	                联想法g	        例句h	                        翻译i
-  -- 1	    ball	[bɔːl]	n.球	    ba+ll	ba爸(拼音)+ll筷子(象形)	爸爸用筷子夹球	The kid is playing the ball. 	孩子在玩皮球。
-  local front, back = "n.球 爸(拼音)+筷子(象形)  爸爸用筷子夹球","ball ba+ll ba爸(拼音)+ll筷子(象形)"
+
+  local front, back = "vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字","write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)"
   --  word + cn + word +back
   -- 原始字符串  
   local word = "abc"
     if (wordListVar == nil or next(wordListVar)) == nil then
-      requestJava = "false"
       -- print("roomName=", room.wordList,",", "_free=",string.find(room.wordList, "_free"))
       print("input_front_back=", input_front_back)
       if containsComma(input_front_back) then
-        front = split(input_front_back,",")[2]
-        back = split(input_front_back,",")[3]
+        front = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[2]
+        back = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[3]
       else
         front, back = getWordTagRandomKeyValue(room:getWordTagObj())
       end
@@ -463,10 +497,9 @@ function showWord(player,room)
     else  
       -- Key QString front = jsonObject["ch"].toString();
       -- Value QString en = jsonObject["en"].toString()..","..jsonObject["en2_long"].toString(); en2是长的
-      requestJava = "true"
       if containsComma(input_front_back) then
-        front = split(input_front_back,",")[2]
-        back = split(input_front_back,",")[3]
+        front = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[2]
+        back = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[3]
       else
         front, back = getRandomKeyValue(wordListVar) 
       end
@@ -491,100 +524,79 @@ function showWord(player,room)
         -- // _xxxxxx_
         -- // property string sentence: "假设我们有一个包含多个单词的字符串 -xxxxxx- u _xxxxxx_ l_xxxxxx_w_xxxxxx_f_xxxxxx_c"
         
-        -- local word = "abc"
-        -- 将字符串拆分成字符表  
-        local charTable = {}  
-        for i = 1, #word do  
-            table.insert(charTable, word:sub(i, i))  
-        end
-        
-        -- 如果字符表少于6个元素，随机添加3个不重复的字母  
-        local alphabet = "abcdefghijklmnopqrstuvwxyz" -- 字母表  
-        local availableLetters = {} -- 存储还未添加到charTable的字母  
-        for i = 1, #alphabet do  
-            table.insert(availableLetters, alphabet:sub(i, i))  
-        end  
-          
-        -- 需要添加的字母数量  
-        local numToAdd = math.max(0, 7 - #charTable)  
-          
-        -- 随机添加字母，直到达到所需数量  
-        for _ = 1, numToAdd do  
-            local randomIndex = math.random(1, #availableLetters)  
-            local randomLetter = availableLetters[randomIndex]  
-            table.insert(charTable, randomLetter)  
-            table.remove(availableLetters, randomIndex) -- 从可用字母列表中移除已添加的字母  
-        end 
-          
-        -- 打乱字符顺序  
-        shuffleTable(charTable)  
-          
-        -- 连接字符串的辅助字符串  
-        local connectorString = "_xxxxxx_"
-          
-        -- 构建最终字符串  
-        local subStr = ""  
-        for i = 1, #charTable do  
-          -- 添加打乱后的字符  
-          subStr = subStr .. charTable[i]  
-          subStr = subStr .. connectorString   
-        end
+        local subStr = splitWord(word)
           
         -- 输出结果  
         -- print("ch....subStr = "..ch.."-xxxxxx-"..subStr)
-        if back == nil then
-          front, back = "n.球 爸(拼音)+筷子(象形)  爸爸用筷子夹球","ball ba+ll ba爸(拼音)+ll筷子(象形)"
-        end
 
-        local msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom
+        local requestJava = "true";
+
+        if front == nil then
+          front, back = "vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字","write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)"
+        end  
+
+        if back == nil then
+          front, back = "vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字","write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)"
+        end  
+
+        local str_front_and_back = front.."_=front_xxxxxxxxxx_back=_"..back
+        -- vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
+        local msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
         while true do
-          if (wordListVar == nil or next(wordListVar)) == nil then
-            
-          else  
-            requestJava = "true"
-          end
           print("msg = " .. msg)
+          requestJava = "true";
           local input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml",   msg)
           print("input_front_back_result = ".. input_front_back_result)
-          -- word + cn + word +back
-          local result = split(input_front_back_result,",")[1]
+          
+          -- input_front_back_result = potato,n.土豆 婆+他+头 婆婆说他的头长得像土豆_=front_xxxxxxxxxx_back=_potato 婆婆说他的头长得像土豆 po婆+ta他+to头
+          local input_front_back_result_arr = split(input_front_back_result,",");
+          local result = input_front_back_result_arr[1]
+          local front_and_back = input_front_back_result_arr[2]
+          str_front_and_back= front_and_back
+          local front_and_back_arr = split(front_and_back,"_=front_xxxxxxxxxx_back=_")
+          local front_and_back_word = split(front_and_back_arr[2]," ")[1]
+
+          requestJava = "false";
+          back = front_and_back_arr[2]
+          front = front_and_back_arr[1]
+          subStr = splitWord(front_and_back_word)
+          msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
+
           print(result)
-          if result == "nm" then
-            print("msg = " .. msg)
-            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
-            print("input_front_back_result = ".. input_front_back_result)
-            result = split(input_front_back_result,",")[1]
-            -- break
-          end
           if result == "aa" then
             print("msg = " .. msg)
-            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom)
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back)
             print("input_front_back_result = ".. input_front_back_result)
+            
+            input_front_back_result_arr = split(input_front_back_result,",");
             result = split(input_front_back_result,",")[1]
+            front_and_back = input_front_back_result_arr[2]
+            str_front_and_back= front_and_back
+            front_and_back_arr = split(front_and_back,"_=front_xxxxxxxxxx_back=_")
+            front_and_back_word = split(front_and_back_arr[2]," ")[1]
+
+            requestJava = "false";
+            back = front_and_back_arr[2]
+            front = front_and_back_arr[1]
+            subStr = splitWord(front_and_back_word)
+            msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
             -- break
           end
-          if result == "a" then
-            print("msg = " .. msg)
-            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", msg)
-            print("input_front_back = ".. input_front_back_result)
-            result = split(input_front_back_result,",")[1]
-            -- break
-          end
+          
            if result == "qwert" then
+             requestJava = "true";
              break
            end
+
            if result == "asdfg" then
+            requestJava = "true";
             break
           end
         
-          print("...."..string.lower(result).."=="..string.lower(word))
-          if string.lower(remove_spaces(result)) == string.lower(remove_spaces(word)) then
-            if ownerRoom == "true" then
-              input_front_back_cheng = input_front_back_result
-            else  
-              input_front_back_jia = input_front_back_result
-            end
-            wordResult = word;
+          print("...."..string.lower(result).."=="..string.lower(front_and_back_word))
+          if string.lower(remove_spaces(result)) == string.lower(remove_spaces(front_and_back_word)) then
+            input_front_back = input_front_back_result
+            wordSound = word;
             break
           end
           -- coroutine.yield("__handleRequest", 31536000000)
@@ -595,7 +607,7 @@ function showWord(player,room)
   else
       -- print("str1 does not contain str2")
   end
-  return wordResult;
+  return wordSound;
 end
 
 function remove_spaces(str)  
