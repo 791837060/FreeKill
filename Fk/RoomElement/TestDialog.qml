@@ -259,6 +259,12 @@ Item {  //row Item
      requestJava = part0_2[3]
      if(requestJava == "true"){
        front_back = Backend.getOneWord("no", "no");
+       if (front_back && front_back.indexOf("_=front_xxxxxxxxxx_back=_") !== -1) {
+           
+        }else{
+           requestJava = "false"
+            front_back = part0_2[5];
+        }
      }else{
        front_back = part0_2[5];
      }

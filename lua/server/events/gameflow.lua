@@ -451,6 +451,7 @@ function splitWord(word)
   return subStr
 end
 
+
 function showWord(player,room)
   print("player.id=", player.id)
   print("room.room:getOwner():getId()=", room.room:getOwner():getId())
@@ -483,27 +484,30 @@ function showWord(player,room)
   --  word + cn + word +back
   -- 原始字符串  
   local word = "abc"
+  local requestJava = "true";
     if (wordListVar == nil or next(wordListVar)) == nil then
+      requestJava = "false";
       -- print("roomName=", room.wordList,",", "_free=",string.find(room.wordList, "_free"))
       print("input_front_back=", input_front_back)
-      if containsComma(input_front_back) then
+      if false and containsComma(input_front_back) then
         front = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[2]
         back = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[3]
       else
         front, back = getWordTagRandomKeyValue(room:getWordTagObj())
       end
-      -- print("getWordTagRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue back:",back)
+      print("getWordTagRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue back:",back)
       -- return ?
-    else  
+    else
+      requestJava = "true";  
       -- Key QString front = jsonObject["ch"].toString();
       -- Value QString en = jsonObject["en"].toString()..","..jsonObject["en2_long"].toString(); en2是长的
-      if containsComma(input_front_back) then
+      if false and containsComma(input_front_back) then
         front = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[2]
         back = split(input_front_back,"_=front_xxxxxxxxxx_back=_")[3]
       else
         front, back = getRandomKeyValue(wordListVar) 
       end
-      -- print("getRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue back:",back)
+      print("getRandomKeyValue ch:",ch, ",getWordTagRandomKeyValue back:",back)
     end
     word = split(back," ")[1]
     print("word = :",word)
@@ -527,9 +531,9 @@ function showWord(player,room)
         local subStr = splitWord(word)
           
         -- 输出结果  
-        -- print("ch....subStr = "..ch.."-xxxxxx-"..subStr)
-
-        local requestJava = "true";
+        print("front = "..front..",back="..back..",word="..word)
+        wordSound = word;
+        
 
         if front == nil then
           front, back = "vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字","write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)"
@@ -544,10 +548,9 @@ function showWord(player,room)
         local msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
         while true do
           print("msg = " .. msg)
-          requestJava = "true";
           local input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml",   msg)
-          print("input_front_back_result = ".. input_front_back_result)
-          
+          -- print("input_front_back_result = ".. input_front_back_result)
+          input_front_back = input_front_back_result
           -- input_front_back_result = potato,n.土豆 婆+他+头 婆婆说他的头长得像土豆_=front_xxxxxxxxxx_back=_potato 婆婆说他的头长得像土豆 po婆+ta他+to头
           local input_front_back_result_arr = split(input_front_back_result,",");
           local result = input_front_back_result_arr[1]
@@ -555,46 +558,44 @@ function showWord(player,room)
           str_front_and_back= front_and_back
           local front_and_back_arr = split(front_and_back,"_=front_xxxxxxxxxx_back=_")
           local front_and_back_word = split(front_and_back_arr[2]," ")[1]
+          wordSound = front_and_back_word;
 
-          requestJava = "false";
           back = front_and_back_arr[2]
           front = front_and_back_arr[1]
           subStr = splitWord(front_and_back_word)
-          msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
+          msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
 
-          print(result)
+          -- print(result)
           if result == "aa" then
-            print("msg = " .. msg)
-            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back)
-            print("input_front_back_result = ".. input_front_back_result)
-            
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back)
+            -- print("input_front_back_result = ".. input_front_back_result)
+            input_front_back = input_front_back_result
             input_front_back_result_arr = split(input_front_back_result,",");
             result = split(input_front_back_result,",")[1]
             front_and_back = input_front_back_result_arr[2]
             str_front_and_back= front_and_back
             front_and_back_arr = split(front_and_back,"_=front_xxxxxxxxxx_back=_")
             front_and_back_word = split(front_and_back_arr[2]," ")[1]
+            wordSound = front_and_back_word;
 
-            requestJava = "false";
             back = front_and_back_arr[2]
             front = front_and_back_arr[1]
             subStr = splitWord(front_and_back_word)
-            msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
             -- break
           end
           
            if result == "qwertyuiopasdfghjklzxcvbnm" then
-             requestJava = "true";
              break
            end
         
+          requestJava = "true";
           print("...."..string.lower(result).."=="..string.lower(front_and_back_word))
+          print(".... wordSound = " .. wordSound)
           if string.lower(remove_spaces(result)) == string.lower(remove_spaces(front_and_back_word)) then
-            input_front_back = input_front_back_result
-            wordSound = word;
             break
           end
           -- coroutine.yield("__handleRequest", 31536000000)
+          
           coroutine.yield("__handleRequest", 31536000000)
         end
         -- print("jack2222")
