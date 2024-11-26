@@ -583,15 +583,10 @@ function showWord(player,room)
             -- break
           end
           
-           if result == "qwert" then
+           if result == "qwertyuiopasdfghjklzxcvbnm" then
              requestJava = "true";
              break
            end
-
-           if result == "asdfg" then
-            requestJava = "true";
-            break
-          end
         
           print("...."..string.lower(result).."=="..string.lower(front_and_back_word))
           if string.lower(remove_spaces(result)) == string.lower(remove_spaces(front_and_back_word)) then
