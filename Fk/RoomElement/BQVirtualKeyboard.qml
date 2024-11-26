@@ -411,12 +411,7 @@ Rectangle {
                     // console.log("回车键被按下")
                     // 在这里添加你希望在按下回车键时执行的代码
 
-                    if(root.requestJava === "true" && input1.text.trim().toLowerCase() === root.word.trim().toLowerCase()){
-                        ClientInstance.replyToServer("", input1.text+","+root.front_back);
-                        root.front_back = Backend.getOneWord(root.ownerRoom, root.word.trim());
-                    }else{
-                        ClientInstance.replyToServer("", input1.text);
-                    }
+                    ClientInstance.replyToServer("", input1.text+","+root.front_back);
                     finished(); 
                 }  
             }  
