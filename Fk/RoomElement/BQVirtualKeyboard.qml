@@ -72,10 +72,17 @@ Rectangle {
                     id: area0
                     anchors.fill: parent
                     focus: false
-                    onPressed: {
+                    //onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
-                        input1.text = input1.text + modelData
+                        //input1.text = input1.text + modelData
+                    //}
+
+                     TapHandler {
+                        id: tapHandler1
+                        onTapped: {
+                            input1.text = input1.text + modelData;
+                        }
                     }
                 }
             }
@@ -117,10 +124,16 @@ Rectangle {
                     id: area1
                     anchors.fill: parent
                     focus: false
-                    onPressed: {
+                    //onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
-                        input1.text = input1.text + modelData
+                        //input1.text = input1.text + modelData
+                    //}
+                     TapHandler {
+                        id: tapHandler2
+                        onTapped: {
+                            input1.text = input1.text + modelData;
+                        }
                     }
                 }
             }
@@ -159,22 +172,16 @@ Rectangle {
                     text: modelData
                 }
 
-                MouseArea {
-                    id: area2
-                    anchors.fill: parent
-                    enabled: !isTouching
-                    focus: false
-                    onPressed: {
-                        //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
-                        //focusedItem.text = focusedItem.text + modelData
-                        if (!isTouching) {
-                            isTouching = true
-                            input1.text = input1.text + modelData
-                            isTouching = false
-                        }
+                
+
+                TapHandler {
+                    id: tapHandler
+                    onTapped: {
+                        input1.text = input1.text + modelData;
                     }
-                    
                 }
+
+                
             }
         }
     }
@@ -206,12 +213,18 @@ Rectangle {
                 id: area_clear
                 anchors.fill: parent
                 focus: false
-                onPressed: {
+                //onPressed: {
                     //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                     //focusedItem.text = ""
-                    input1.text = ""
+                    //input1.text = ""
                     
-                }
+                //}
+                 TapHandler {
+                        id: tapHandler3
+                        onTapped: {
+                            input1.text = ""
+                        }
+                    }
             }
         }
 
@@ -244,11 +257,17 @@ Rectangle {
                     id: area3
                     anchors.fill: parent
                     focus: false
-                    onPressed: {
+                    //onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
-                        input1.text = input1.text + modelData
+                        //input1.text = input1.text + modelData
                         
+                    //}
+                     TapHandler {
+                        id: tapHandler4
+                        onTapped: {
+                            input1.text = input1.text + modelData;
+                        }
                     }
                 }
             }
@@ -275,11 +294,19 @@ Rectangle {
                 id: area_backspace
                 anchors.fill: parent
                 focus: false
-                onPressed: {
+                //onPressed: {
                     //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                     //focusedItem.text = focusedItem.text.slice(0, -1)
-                    input1.text = input1.text.slice(0, -1)
+                   // input1.text = input1.text.slice(0, -1)
                 
+               // }
+
+                TapHandler {
+                    id: tapHandler5
+                    onTapped: {
+                       
+                        input1.text = input1.text.slice(0, -1)
+                    }
                 }
             }
         }
@@ -312,7 +339,13 @@ Rectangle {
                 id: area_switch
                 anchors.fill: parent
                 focus: false
-                onPressed: isEnglish = !isEnglish
+                //onPressed: isEnglish = !isEnglish
+                TapHandler {
+                    id: tapHandler6
+                    onTapped: {
+                         isEnglish = !isEnglish
+                    }
+                }
             }
         }
 
@@ -337,11 +370,18 @@ Rectangle {
                 id: area_space
                 anchors.fill: parent
                 focus: false
-                onPressed: {
+                //onPressed: {
                     //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                     //focusedItem.text += " "
-                    input1.text += " "
+                    //input1.text += " "
             
+                //}
+
+                TapHandler {
+                    id: tapHandler7
+                    onTapped: {
+                         input1.text += " "
+                    }
                 }
             }
         }
@@ -369,11 +409,22 @@ Rectangle {
                 id: area_shift
                 anchors.fill: parent
                 focus: false
-                onPressed: {
-                    if (isEnglish) {
+                //onPressed: {
+                   // if (isEnglish) {
+                        //isUpper = !isUpper
+                    //} else {
+                        //page == 1 ? (page = 2) : (page = 1)
+                    //}
+                //}
+
+                TapHandler {
+                    id: tapHandler8
+                    onTapped: {
+                        if (isEnglish) {
                         isUpper = !isUpper
-                    } else {
-                        page == 1 ? (page = 2) : (page = 1)
+                        } else {
+                            page == 1 ? (page = 2) : (page = 1)
+                        }
                     }
                 }
             }
@@ -400,10 +451,19 @@ Rectangle {
                 id: area_enter  
                 anchors.fill: parent  
                 focus: false  
-                onPressed: {  
-                    ClientInstance.replyToServer("", input1.text+","+root.front_back);
-                    finished(); 
-                }  
+                //onPressed: {  
+                    //ClientInstance.replyToServer("", input1.text+","+root.front_back);
+                    //finished(); 
+                //}
+                
+                TapHandler {
+                    id: tapHandler9
+                    onTapped: {
+                        ClientInstance.replyToServer("", input1.text+","+root.front_back);
+                        finished(); 
+                    }
+                }
+                  
             }  
 }
     }
