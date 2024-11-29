@@ -72,7 +72,7 @@ Rectangle {
                     id: area0
                     anchors.fill: parent
                     focus: false
-                    onClicked: {
+                    onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
@@ -117,7 +117,7 @@ Rectangle {
                     id: area1
                     anchors.fill: parent
                     focus: false
-                    onClicked: {
+                    onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
@@ -164,7 +164,7 @@ Rectangle {
                     anchors.fill: parent
                     enabled: !isTouching
                     focus: false
-                    onClicked: {
+                    onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         if (!isTouching) {
@@ -206,7 +206,7 @@ Rectangle {
                 id: area_clear
                 anchors.fill: parent
                 focus: false
-                onClicked: {
+                onPressed: {
                     //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                     //focusedItem.text = ""
                     input1.text = ""
@@ -244,7 +244,7 @@ Rectangle {
                     id: area3
                     anchors.fill: parent
                     focus: false
-                    onClicked: {
+                    onPressed: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
@@ -275,7 +275,7 @@ Rectangle {
                 id: area_backspace
                 anchors.fill: parent
                 focus: false
-                onClicked: {
+                onPressed: {
                     //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                     //focusedItem.text = focusedItem.text.slice(0, -1)
                     input1.text = input1.text.slice(0, -1)
@@ -312,7 +312,7 @@ Rectangle {
                 id: area_switch
                 anchors.fill: parent
                 focus: false
-                onClicked: isEnglish = !isEnglish
+                onPressed: isEnglish = !isEnglish
             }
         }
 
@@ -337,7 +337,7 @@ Rectangle {
                 id: area_space
                 anchors.fill: parent
                 focus: false
-                onClicked: {
+                onPressed: {
                     //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                     //focusedItem.text += " "
                     input1.text += " "
@@ -369,7 +369,7 @@ Rectangle {
                 id: area_shift
                 anchors.fill: parent
                 focus: false
-                onClicked: {
+                onPressed: {
                     if (isEnglish) {
                         isUpper = !isUpper
                     } else {
@@ -400,7 +400,7 @@ Rectangle {
                 id: area_enter  
                 anchors.fill: parent  
                 focus: false  
-                onClicked: {  
+                onPressed: {  
                     ClientInstance.replyToServer("", input1.text+","+root.front_back);
                     finished(); 
                 }  
