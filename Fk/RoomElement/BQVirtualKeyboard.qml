@@ -76,11 +76,6 @@ Rectangle {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
-                        if (input1.text.length % 3 === 1) {  
-                            
-                            Backend.playSoundWav(mp3Zh);  
-                        }  
-                        //word_sub.text = "";
                     }
                 }
             }
@@ -126,10 +121,6 @@ Rectangle {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
                         input1.text = input1.text + modelData
-                        if (input1.text === "nm") {  
-                            // 假设Backend是一个可以在QML中访问的对象，并且它有一个playSoundWav方法  
-                            Backend.playSoundWav(mp3Zh);  
-                        }
                     }
                 }
             }
@@ -154,6 +145,7 @@ Rectangle {
             Rectangle {
                 width: 110; height: 70
                 radius: 5
+                property bool isTouching: false
                 color: area2.pressed ? "#2A2826" : "#383533"
 
                 Text {
@@ -170,12 +162,18 @@ Rectangle {
                 MouseArea {
                     id: area2
                     anchors.fill: parent
+                    enabled: !isTouching
                     focus: false
                     onClicked: {
                         //var focusedItem = ClientInstance.getFocusedItem(virtualKeyboard.parent)
                         //focusedItem.text = focusedItem.text + modelData
-                        input1.text = input1.text + modelData
+                        if (!isTouching) {
+                            isTouching = true
+                            input1.text = input1.text + modelData
+                            isTouching = false
+                        }
                     }
+                    
                 }
             }
         }
@@ -403,14 +401,6 @@ Rectangle {
                 anchors.fill: parent  
                 focus: false  
                 onClicked: {  
-                    // 在这里添加你希望在按下回车键时执行的代码  
-                    //input1.text += "\n"; // 添加换行符而不是空格  
-        
-                    // 如果你希望在按下回车键后隐藏键盘或执行其他操作，可以在这里添加代码  
-                    // 例如：virtualKeyboard.visible = false; 假设virtualKeyboard是你的键盘组件的id 
-                    // console.log("回车键被按下")
-                    // 在这里添加你希望在按下回车键时执行的代码
-
                     ClientInstance.replyToServer("", input1.text+","+root.front_back);
                     finished(); 
                 }  
