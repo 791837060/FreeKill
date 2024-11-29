@@ -49,8 +49,8 @@ GraphicsBox {
                 verticalAlignment: Text.AlignVCenter // 文本垂直居中  
                 horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
                 text: "["+root.frontArr[2]+"]   "+root.frontArr[0]
-                color: "red"
-                font.weight: Font.Bold // 设置字体加粗  
+                color: "#70DB93"
+                //font.weight: Font.Bold // 设置字体加粗  
                 //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
                 font.pointSize: 30
                 height: 35 // 根据字体大小设置合适的高度
@@ -66,8 +66,8 @@ GraphicsBox {
                 verticalAlignment: Text.AlignVCenter // 文本垂直居中  
                 horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
                 text: "["+root.frontArr[2]+"]   "+root.frontArr[0]
-                color: "red"
-                font.weight: Font.Bold // 设置字体加粗  
+                color: "#70DB93"
+                //font.weight: Font.Bold // 设置字体加粗  
                 //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
                 font.pointSize: 30
                 height: 35 // 根据字体大小设置合适的高度
@@ -84,7 +84,7 @@ GraphicsBox {
           horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
           text: root.frontArr[0]+"   ["+root.frontArr[2]+"]"
           color: "#E4D5A0"
-          font.weight: Font.Bold // 设置字体加粗  
+          //font.weight: Font.Bold // 设置字体加粗  
           //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
           font.pointSize: 30
           height: 35 // 根据字体大小设置合适的高度
@@ -109,7 +109,7 @@ GraphicsBox {
             Layout.fillWidth: true
             Layout.fillHeight: true
             //placeholderText: qsTr("w")
-            //placeholderTextColor: "red"
+            //placeholderTextColor: "#70DB93"
             text: ""
             color: "#E4D5A0"
             Keys.onPressed: {
@@ -139,7 +139,7 @@ Item { //row Item
             horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
             text: input1.text
             color: textColor
-            font.weight: Font.Bold // 设置字体加粗  
+            //font.weight: Font.Bold // 设置字体加粗  
             //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
             font.pointSize: 30
             height: 35 // 根据字体大小设置合适的高度
@@ -149,7 +149,7 @@ Item { //row Item
                       //if (input1.text.trim().toLowerCase() == "name".trim().toLowerCase()) {  
                           //textColor = "green";  
                       //} else {  
-                          //textColor = "red";  
+                          //textColor = "#70DB93";  
                       //}  
 
                       var inputText = input1.text.trim().toLowerCase();  
@@ -189,7 +189,7 @@ Item { //row Item
               }  
         
               // 定义textColor属性  
-              property color textColor: "red" // 初始颜色为红色
+              property color textColor: "#70DB93" // 初始颜色为红色
           }
 }//row Item 
 
@@ -209,7 +209,7 @@ Item {  //row Item
             finished();
             Backend.playSound(mp3); 
           }
-          font.weight: Font.Bold // 设置字体加粗 
+          //font.weight: Font.Bold // 设置字体加粗 
           //font.pixelSize: 20
           font.pointSize: 10
       }
@@ -231,8 +231,8 @@ Item {  //row Item
             anchors.fill: parent // 填充整个 Item  
             verticalAlignment: Text.AlignVCenter // 文本垂直居中  
             horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
-            color: "red"
-            font.weight: Font.Bold // 设置字体加粗  
+            color: "#70DB93"
+            //font.weight: Font.Bold // 设置字体加粗  
             //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
             font.pointSize: 30
             height: 35 // 根据字体大小设置合适的高度

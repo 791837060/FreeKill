@@ -57,15 +57,15 @@ Rectangle {
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area0.pressed ? "#5D4B37" : "#FFFFFF"
+                    color: area0.pressed ? "#FFFFFF" : "#000000"
                     text: modelData
 
                     // 动态计算字体大小  
                     //property real availableWidth: parent.width - 5 // 减去一些间距以确保文本不会紧贴边界  
                     //property real availableHeight: parent.height - 5 // 同上  
                     //property real fontSize: Math.min(availableWidth, availableHeight) // 假设每个字符大约占据相同的宽度  
-                    font.weight: Font.Bold // 设置字体加粗 
-                    font.pixelSize: 70
+                    //font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 60
                 }
 
                 MouseArea {
@@ -111,12 +111,12 @@ Rectangle {
 
                 Text {
                     anchors.fill: parent
-                    font.weight: Font.Bold // 设置字体加粗 
-                    font.pixelSize: 70
+                    //font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 60
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area1.pressed ? "#5D4B37" : "#FFFFFF"
+                    color: area1.pressed ? "#FFFFFF" : "#000000"
                     text: modelData
                 }
 
@@ -163,25 +163,46 @@ Rectangle {
 
                 Text {
                     anchors.fill: parent
-                    font.weight: Font.Bold // 设置字体加粗 
-                    font.pixelSize: 70
+                    //font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 60
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area2.pressed ? "#5D4B37" : "#FFFFFF"
+                    color: area2.pressed ? "#FFFFFF" : "#000000"
                     text: modelData
                 }
 
+//白色 #FFFFFF
+//2 红色 #FF0000
+//3 绿色 #00FF00
+//4 蓝色 #0000FF
+//5 牡丹红 #FF00FF
+//6 青色 #00FFFF
+//7 黄色 #FFFF00
+//8 黑色 #000000
+//9 海蓝 #70DB93
+//10 巧克力色 #5C3317
+//11 蓝紫色 #9F5F9F
+//12 黄铜色 #B5A642
+//13 亮金色 #D9D919
+//14 棕色 #A67D3D
+//15 青铜色 #8C7853
                 
-
-                TapHandler {
-                    id: tapHandler
-                    onTapped: {
-                        input1.text = input1.text + modelData;
+                 MouseArea {
+                    id: area2
+                    anchors.fill: parent
+                    focus: false
+                    //onPressed: {
+                        //input1.text = input1.text + modelData
+                    //}
+                      
+                    TapHandler {
+                        id: tapHandler
+                        onTapped: {
+                            input1.text = input1.text + modelData
+                        }
                     }
-                }
-
-                
+                }   
             }
         }
     }
@@ -200,12 +221,12 @@ Rectangle {
 
             Text {
                 anchors.fill: parent
-                font.weight: Font.Bold // 设置字体加粗 
+                //font.weight: Font.Bold // 设置字体加粗 
                     font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_clear.pressed ? "#5D4B37" : "#FFFFFF"
+                color: area_clear.pressed ? "#FFFFFF" : "#000000"
                 text: languageType == 1 ? "清 空" : "Clear"
             }
 
@@ -244,12 +265,12 @@ Rectangle {
 
                 Text {
                     anchors.fill: parent
-                    font.weight: Font.Bold // 设置字体加粗 
-                    font.pixelSize: 70
+                    //font.weight: Font.Bold // 设置字体加粗 
+                    font.pixelSize: 60
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area3.pressed ? "#5D4B37" : "#FFFFFF"
+                    color: area3.pressed ? "#FFFFFF" : "#000000"
                     text: modelData
                 }
 
@@ -281,12 +302,12 @@ Rectangle {
 
             Text {
                 anchors.fill: parent
-                font.weight: Font.Bold // 设置字体加粗 
+                //font.weight: Font.Bold // 设置字体加粗 
                 font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_backspace.pressed ? "#5D4B37" : "#FFFFFF"
+                color: area_backspace.pressed ? "#FFFFFF" : "#000000"
                 text: languageType == 1 ? "回 退" : "Backspace"
             }
 
@@ -326,12 +347,12 @@ Rectangle {
 
             Text {
                 anchors.fill: parent
-                font.weight: Font.Bold // 设置字体加粗 
+                //font.weight: Font.Bold // 设置字体加粗 
                     font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_switch.pressed ? "#5D4B37" : "#FFFFFF"
+                color: area_switch.pressed ? "#FFFFFF" : "#000000"
                 text: isEnglish ? "&123" : "ABC"
             }
 
@@ -357,12 +378,12 @@ Rectangle {
 
             Text {
                 anchors.fill: parent
-                font.weight: Font.Bold // 设置字体加粗 
+                //font.weight: Font.Bold // 设置字体加粗 
                     font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_space.pressed ? "#5D4B37" : "#FFFFFF"
+                color: area_space.pressed ? "#FFFFFF" : "#000000"
                 text: languageType == 1 ? "空 格" : "Space"
             }
 
@@ -396,12 +417,12 @@ Rectangle {
 
             Text {
                 anchors.fill: parent
-                font.weight: Font.Bold // 设置字体加粗 
+                //font.weight: Font.Bold // 设置字体加粗 
                 font.pixelSize: 32
                 //font.family: textFontFamily
                 verticalAlignment: Text.AlignVCenter
                 horizontalAlignment: Text.AlignHCenter
-                color: area_shift.pressed ? "#5D4B37" : (isEnglish && isUpper ? "#239B56" : "#FFFFFF")
+                color: area_shift.pressed ? "#FFFFFF" : (isEnglish && isUpper ? "#239B56" : "#000000")
                 text: isEnglish ? "Shift" : (page == 1 ? "1/2" : "2/2")
             }
 
@@ -439,11 +460,11 @@ Rectangle {
         
             Text {  
                 anchors.fill: parent  
-                font.weight: Font.Bold // 设置字体加粗  
+                //font.weight: Font.Bold // 设置字体加粗  
                 font.pixelSize: 32  
                 verticalAlignment: Text.AlignVCenter  
                 horizontalAlignment: Text.AlignHCenter  
-                color: area_enter.pressed ? "#5D4B37" : "#FFFFFF"  
+                color: area_enter.pressed ? "#FFFFFF" : "#000000"  
                 text: languageType == 1 ? "回车" : "Enter" // 更改文本为“回车”或“Enter”  
             }  
         
