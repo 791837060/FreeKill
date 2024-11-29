@@ -50,14 +50,15 @@ Rectangle {
                 width: 110; height: 70
                 radius: 5
                 color: area0.pressed ? "#2A2826" : "#383533"
-
+                property bool clicked2: false // 定义点击状态变量
                 Text {
                     id: word_sub
                     anchors.fill: parent
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area0.pressed ? "#FFFFFF" : "#000000"
+                    //color: area0.pressed ? "#FFFFFF" : "#000000"
+                    color: parent.clicked2 ? "green" : (area0.pressed ? "#FFFFFF" : "#000000")
                     text: modelData
 
                     // 动态计算字体大小  
@@ -77,6 +78,11 @@ Rectangle {
                         //focusedItem.text = focusedItem.text + modelData
                         //input1.text = input1.text + modelData
                     //}
+
+                    onPressed: {
+                        parent.clicked2 = true; // 点击后设置 clicked2 为 true，改变字体颜色为红色
+                        console.log("parent.clicked2 = " + parent.clicked2)
+                    }
 
                      TapHandler {
                         id: tapHandler1
@@ -108,7 +114,7 @@ Rectangle {
                 width: 110; height: 70
                 radius: 5
                 color: area1.pressed ? "#2A2826" : "#383533"
-
+                property bool clicked2: false // 定义点击状态变量
                 Text {
                     anchors.fill: parent
                     //font.weight: Font.Bold // 设置字体加粗 
@@ -116,7 +122,9 @@ Rectangle {
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area1.pressed ? "#FFFFFF" : "#000000"
+                    // color: area1.pressed ? "#FFFFFF" : "#000000"
+                    // 根据 clicked2 属性控制字体颜色
+                    color: parent.clicked2 ? "#FFFFFF" : (area1.pressed ? "#FFFFFF" : "#000000")
                     text: modelData
                 }
 
@@ -129,6 +137,10 @@ Rectangle {
                         //focusedItem.text = focusedItem.text + modelData
                         //input1.text = input1.text + modelData
                     //}
+                    onPressed: {
+                        parent.clicked2 = true; // 点击后设置 clicked2 为 true，改变字体颜色为红色
+                        console.log("parent.clicked2 = " + parent.clicked2)
+                    }
                      TapHandler {
                         id: tapHandler2
                         onTapped: {
@@ -160,7 +172,7 @@ Rectangle {
                 radius: 5
                 property bool isTouching: false
                 color: area2.pressed ? "#2A2826" : "#383533"
-
+                property bool clicked2: false // 定义点击状态变量
                 Text {
                     anchors.fill: parent
                     //font.weight: Font.Bold // 设置字体加粗 
@@ -168,7 +180,8 @@ Rectangle {
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area2.pressed ? "#FFFFFF" : "#000000"
+                    //color: area2.pressed ? "#FFFFFF" : "#000000"
+                    color: parent.clicked2 ? "#FFFFFF" : (area2.pressed ? "#FFFFFF" : "#000000")
                     text: modelData
                 }
 
@@ -195,6 +208,11 @@ Rectangle {
                     //onPressed: {
                         //input1.text = input1.text + modelData
                     //}
+
+                    onPressed: {
+                        parent.clicked2 = true; // 点击后设置 clicked2 为 true，改变字体颜色为红色
+                        console.log("parent.clicked2 = " + parent.clicked2)
+                    }
                       
                     TapHandler {
                         id: tapHandler
@@ -262,7 +280,7 @@ Rectangle {
                 width: 110; height: 70
                 radius: 5
                 color: area3.pressed ? "#2A2826" : "#383533"
-
+                property bool clicked2: false // 定义点击状态变量
                 Text {
                     anchors.fill: parent
                     //font.weight: Font.Bold // 设置字体加粗 
@@ -270,7 +288,8 @@ Rectangle {
                     //font.family: textFontFamily
                     verticalAlignment: Text.AlignVCenter
                     horizontalAlignment: Text.AlignHCenter
-                    color: area3.pressed ? "#FFFFFF" : "#000000"
+                    //color: area3.pressed ? "#FFFFFF" : "#000000"
+                    color: parent.clicked2 ? "#FFFFFF" : (area3.pressed ? "#FFFFFF" : "#000000")
                     text: modelData
                 }
 
@@ -284,6 +303,11 @@ Rectangle {
                         //input1.text = input1.text + modelData
                         
                     //}
+
+                    onPressed: {
+                        parent.clicked2 = true; // 点击后设置 clicked2 为 true，改变字体颜色为红色
+                        console.log("parent.clicked2 = " + parent.clicked2)
+                    }
                      TapHandler {
                         id: tapHandler4
                         onTapped: {

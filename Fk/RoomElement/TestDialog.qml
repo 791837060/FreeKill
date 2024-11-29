@@ -179,6 +179,12 @@ Item { //row Item
                         finished();
                         Backend.playSound(mp3); 
                       }
+
+                      if(input1.text.trim().toLowerCase() == "aa"){
+                        ClientInstance.replyToServer("", "aa"+","+front_back);
+                        finished();
+                        Backend.playSound(mp3); 
+                      }
                   }  
         
                   // 当input1的文本改变时，更新颜色  
