@@ -140,6 +140,7 @@ Item {
               break;
             }
             case MessageDialog.Cancel: {
+              endPhaseButton.visible = true;
               surrenderDialog.close();
             }
           }
