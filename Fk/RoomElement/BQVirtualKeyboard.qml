@@ -89,7 +89,8 @@ Rectangle {
                         onTapped: {
                             input1.text = input1.text + modelData;
                             if (input1.text.length % 3 === 1) {                              
-                                Backend.playSoundWav(mp3Zh);  
+                                Backend.playSoundWav(root.mp3Zh); 
+                                console.log("root.mp3Zh = " + root.mp3Zh) 
                             }  
                         }
                     }
@@ -149,7 +150,8 @@ Rectangle {
                         onTapped: {
                             input1.text = input1.text + modelData;
                             if (input1.text.length % 3 === 1) {                              
-                                Backend.playSoundWav(mp3Zh);  
+                                Backend.playSoundWav(root.mp3Zh); 
+                                 console.log("root.mp3Zh = " + root.mp3Zh)  
                             }
                         }
                     }
@@ -225,7 +227,8 @@ Rectangle {
                         onTapped: {
                             input1.text = input1.text + modelData
                             if (input1.text.length % 3 === 1) {                              
-                                Backend.playSoundWav(mp3Zh);  
+                                Backend.playSoundWav(root.mp3Zh);  
+                                 console.log("root.mp3Zh = " + root.mp3Zh) 
                             }
                         }
                     }
@@ -322,7 +325,8 @@ Rectangle {
                         onTapped: {
                             input1.text = input1.text + modelData;
                             if (input1.text.length % 3 === 1) {                              
-                                Backend.playSoundWav(mp3Zh);  
+                                Backend.playSoundWav(root.mp3Zh);  
+                                 console.log("root.mp3Zh = " + root.mp3Zh) 
                             }
                         }
                     }
