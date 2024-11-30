@@ -88,6 +88,9 @@ Rectangle {
                         id: tapHandler1
                         onTapped: {
                             input1.text = input1.text + modelData;
+                            if (input1.text.length % 3 === 1) {                              
+                                Backend.playSoundWav(mp3Zh);  
+                            }  
                         }
                     }
                 }
@@ -145,6 +148,9 @@ Rectangle {
                         id: tapHandler2
                         onTapped: {
                             input1.text = input1.text + modelData;
+                            if (input1.text.length % 3 === 1) {                              
+                                Backend.playSoundWav(mp3Zh);  
+                            }
                         }
                     }
                 }
@@ -218,6 +224,9 @@ Rectangle {
                         id: tapHandler
                         onTapped: {
                             input1.text = input1.text + modelData
+                            if (input1.text.length % 3 === 1) {                              
+                                Backend.playSoundWav(mp3Zh);  
+                            }
                         }
                     }
                 }   
@@ -312,6 +321,9 @@ Rectangle {
                         id: tapHandler4
                         onTapped: {
                             input1.text = input1.text + modelData;
+                            if (input1.text.length % 3 === 1) {                              
+                                Backend.playSoundWav(mp3Zh);  
+                            }
                         }
                     }
                 }
