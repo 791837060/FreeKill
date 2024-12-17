@@ -487,6 +487,7 @@ function showWord(player,room)
   local requestJava = "true";
     if (wordListVar == nil or next(wordListVar)) == nil then
       requestJava = "false";
+      requestJava = "true";
       -- print("roomName=", room.wordList,",", "_free=",string.find(room.wordList, "_free"))
       print("input_front_back=", input_front_back)
       if false and containsComma(input_front_back) then
@@ -511,7 +512,7 @@ function showWord(player,room)
     end
     word = split(back," ")[1]
     print("word = :",word)
-  if string.find(room.wordList, "_word") and (string.find(room.wordList, "_free") == nil) then
+  if string.find(room.wordList, "_free") == nil then
       -- print("str1 contains str2")
       if player.id < 0 then -- Robot
         -- 不执行
@@ -545,7 +546,8 @@ function showWord(player,room)
 
         local str_front_and_back = front.."_=front_xxxxxxxxxx_back=_"..back
         -- vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
-        local msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
+        -- local msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back.."-xxxxxx-"..room.wordList
+        local msg = '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "aa": "false"}'
         while true do
           print("msg = " .. msg)
           local input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml",   msg)
@@ -563,11 +565,20 @@ function showWord(player,room)
           back = front_and_back_arr[2]
           front = front_and_back_arr[1]
           subStr = splitWord(front_and_back_word)
-          msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back
-
+          -- msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back.."-xxxxxx-"..room.wordList
+          msg = '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "aa": "false"}'
           -- print(result)
-          if result == "aa" then
-            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back)
+          
+          while not (string.lower(remove_spaces(result)) == string.lower(remove_spaces(front_and_back_word))) do
+            if result == "qwertyuiop" then
+              break
+            end
+            local aa = "false"
+            if result == "aa" then
+              aa = "true"
+            end
+            --input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back.."-xxxxxx-"..room.wordList)
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "false", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "aa": "'..aa..'"}')
             -- print("input_front_back_result = ".. input_front_back_result)
             input_front_back = input_front_back_result
             input_front_back_result_arr = split(input_front_back_result,",");
@@ -584,16 +595,17 @@ function showWord(player,room)
             -- break
           end
           
-           if result == "qwertyuiopasdfghjklzxcvbnm" then
+           if result == "qwertyuiop" then
              break
            end
-        
-          requestJava = "true";
+
           print("...."..string.lower(result).."=="..string.lower(front_and_back_word))
           print(".... wordSound = " .. wordSound)
           if string.lower(remove_spaces(result)) == string.lower(remove_spaces(front_and_back_word)) then
             break
           end
+
+
           -- coroutine.yield("__handleRequest", 31536000000)
           
           coroutine.yield("__handleRequest", 31536000000)

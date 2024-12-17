@@ -373,10 +373,19 @@ void QmlBackend::playSoundWav(const QString &name, int index) {
   player->play();
 }
 
-QString QmlBackend::getOneWord(const QString &ownerRoom, const QString &rightWord) {
+QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name, const QString &rightWord) {
   //lua_State *L = ClientInstance->getLuaState();
+  // 正则表达式匹配 IPv4 地址
+    QRegularExpression ipRegex("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$");
+    QString ip = spring_ip_or_room_name;
+    // 检查是否是有效的 IP 地址
+    if (!ipRegex.match(ip).hasMatch()) {
+        // 如果不是 IP 地址，使用默认值
+        ip = "192.168.3.25"; // 你可以根据需要替换为其他默认 IP
+    }
+
   QNetworkAccessManager* manager = new QNetworkAccessManager(this);
-  QUrl url("http://192.168.3.25:8000/api/wx/student/question/answer/xinyueshaTest");
+  QUrl url("http://"+ip+":8000/api/wx/student/question/answer/xinyueshaTest");
   QNetworkRequest request(url);
 
   // 设置请求头
@@ -389,7 +398,7 @@ QString QmlBackend::getOneWord(const QString &ownerRoom, const QString &rightWor
 
   // 构建 JSON 数据
   QJsonObject jsonObject;
-  jsonObject["ownerRoom"] = ownerRoom; // 示例键值对
+  jsonObject["ownerRoom"] = ip; // 示例键值对
   jsonObject["rightWord"] = rightWord;
 
   // 将 JSON 对象转换为字符串
@@ -449,7 +458,7 @@ QString QmlBackend::getOneWord(const QString &ownerRoom, const QString &rightWor
   reply->deleteLater();
   manager->deleteLater(); // 如果不再需要 manager，也可以在这里删除它
   // 输出结果
-  qDebug() << "result:" << result ;
+  qDebug() << "ip result:" << ip+" "+result ;
   return result; // 或者返回其他有意义的字符串或数据
 }
 

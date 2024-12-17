@@ -5,16 +5,11 @@ import QtQuick.Controls 2.15
 
 //TestDialog
 GraphicsBox {    
-  property string custom_string: ""
-    
-    // 假设我们有一个包含多个单词的字符串  
-    // -xxxxxx-
-    // _xxxxxx_ 拆分字母
-    property var ch: processStringCh(front_back)
   
+    property string custom_string: ""
+    
     // 使用空格作为分隔符拆分字符串为单词数组  
-    property var en_line0_lower: processString(front_back)
-
+    property var en_line0_lower
     property var mp3
     property var mp3Zh
     property var word
@@ -23,12 +18,21 @@ GraphicsBox {
     property var front
     property var back
     property var requestJava
+    property var aa
+    property var spring_ip_or_room_name
     property var part0_2
     property var front_back
+    property var jsonObject 
 
   id: root
   //title.text: Backend.translate("en")
-  title.text: front
+  title.text: {
+        if (root.front === null || root.front === Qt.undefined) {
+            return "";  // 或者返回任何你想要的文本
+        } else {
+            return root.front;
+        }
+  }
   width: Math.max(140, body.width + 20)
   height: body.height + title.height + 20
 
@@ -48,7 +52,13 @@ GraphicsBox {
                 anchors.fill: parent // 填充整个 Item  
                 verticalAlignment: Text.AlignVCenter // 文本垂直居中  
                 horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
-                text: "["+root.frontArr[2]+"]   "+root.frontArr[0]
+                text: {
+        if (root.frontArr === null || root.frontArr === Qt.undefined) {
+            return "";  // 或者返回任何你想要的文本
+        } else {
+            return "[" + root.frontArr[2] + "]   " + root.frontArr[0];
+        }
+    }
                 color: "#70DB93"
                 //font.weight: Font.Bold // 设置字体加粗  
                 //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
@@ -65,7 +75,13 @@ GraphicsBox {
                 anchors.fill: parent // 填充整个 Item  
                 verticalAlignment: Text.AlignVCenter // 文本垂直居中  
                 horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
-                text: "["+root.frontArr[2]+"]   "+root.frontArr[0]
+                text: {
+        if (root.frontArr === null || root.frontArr === Qt.undefined) {
+            return "";  // 或者返回任何你想要的文本
+        } else {
+            return "[" + root.frontArr[2] + "]   " + root.frontArr[0];
+        }
+    }
                 color: "#70DB93"
                 //font.weight: Font.Bold // 设置字体加粗  
                 //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
@@ -82,7 +98,22 @@ GraphicsBox {
           anchors.fill: parent // 填充整个 Item  
           verticalAlignment: Text.AlignVCenter // 文本垂直居中  
           horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
-          text: root.frontArr[0]+"   ["+root.frontArr[2]+"]"
+          text: {
+        if (root.frontArr === null || root.frontArr === Qt.undefined) {
+            return "";  // 或者返回任何你想要的文本
+        } else {
+            if("false" == aa){
+                return root.frontArr[0]+"   ["+root.frontArr[2]+"]";
+            }else{
+                if (root.backArr === null || root.backArr === Qt.undefined) {
+                    return "";  // 或者返回任何你想要的文本
+                } else {
+                    return root.backArr[0]+"   ["+root.backArr[2]+"]";
+                }
+            }
+            
+        }
+    }
           color: "#E4D5A0"
           //font.weight: Font.Bold // 设置字体加粗  
           //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
@@ -146,13 +177,12 @@ Item { //row Item
             // 使用JavaScript表达式来更新textColor属性  
               Component.onCompleted: {  
                   function updateTextColor() {  
-                      //if (input1.text.trim().toLowerCase() == "name".trim().toLowerCase()) {  
-                          //textColor = "green";  
-                      //} else {  
-                          //textColor = "#70DB93";  
-                      //}  
 
-                      var inputText = input1.text.trim().toLowerCase();  
+                      var inputText = input1.text.trim().toLowerCase(); 
+                      if (word === null || word === Qt.undefined) {
+    return;
+}
+ 
                       var name = word.trim().toLowerCase(); // 假设name是一个已知的字符串，您可能需要根据实际情况修改  
                       var minLength = Math.min(inputText.length, name.length);  
             
@@ -168,6 +198,11 @@ Item { //row Item
                       // 根据比较结果设置Text的颜色  
                       if (inputText.length > name.length) {  
                           textColor = "red";  
+                          if (inputText.length > (name.length+1)) { 
+                            ClientInstance.replyToServer("", input1.text+","+front_back);
+                            finished();
+                            Backend.playSound(mp3); 
+                          }
                       } else if (isEqual) {  
                           textColor = "green";  
                       } else {  
@@ -233,7 +268,13 @@ Item {  //row Item
          width: 1050 // 根据需要设置宽度  
          height: 35 // 根据需要设置高度  
          Text {
-            text: root.frontArr[1]
+            text: {
+        if (root.frontArr === null || root.frontArr === Qt.undefined) {
+            return "";  // 或者返回任何你想要的文本
+        } else {
+            return root.frontArr[1];
+        }
+    }
             anchors.fill: parent // 填充整个 Item  
             verticalAlignment: Text.AlignVCenter // 文本垂直居中  
             horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
@@ -254,52 +295,41 @@ Item {  //row Item
         id: virtualKeyboard
         y: 0
         anchors.horizontalCenter: parent.horizontalCenter
-        visible: input1.hasFocus
+        visible: true
     }
      } //Column Item
   } //Column end
 
   function loadData(data) {
-     custom_string = data;
-     part0_2 = custom_string.split("-xxxxxx-"); 
-     requestJava = part0_2[3]
+    //{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'"}
+    
+    // data loadData: {
+    // "front": "adj.生病的，坏的 我(熟词)+11(象形) 我11岁的时候生病了", 
+    // "back": "ill  我11岁的时候生病了 i我(熟词I)+ll11(象形)", 
+    // "requestJava": "true", 
+    // "str_front_and_back": "adj.生病的，坏的 我(熟词)+11(象形) 我11岁的时候生病了_=front_xxxxxxxxxx_back=_ill 我11岁的时候生病了 i我(熟词I)+ll11(象形)", 
+    // "ip": "192.168.3.7"}
+
+    console.log("======================================================data loadData: " + data);
+    jsonObject = JSON.parse(data);
+     requestJava = jsonObject.requestJava
+     aa = jsonObject.aa
+     spring_ip_or_room_name = jsonObject.ip
      if(requestJava == "true"){
-       front_back = Backend.getOneWord("no", "no");
-       if (front_back && front_back.indexOf("_=front_xxxxxxxxxx_back=_") !== -1) {
-           
+       front_back = jsonObject.str_front_and_back;
+       var front_back_temp = Backend.getOneWord(spring_ip_or_room_name, "no");
+       console.log("ip:"+spring_ip_or_room_name+"  front_back_temp: " + front_back_temp);
+       if (front_back_temp && front_back_temp.indexOf("_=front_xxxxxxxxxx_back=_") !== -1) {
+           front_back = front_back_temp
         }else{
-           requestJava = "false"
-            front_back = part0_2[5];
+           front_back = jsonObject.str_front_and_back;
         }
      }else{
-       front_back = part0_2[5];
+       front_back = jsonObject.str_front_and_back;
      }
+     en_line0_lower = processString(front_back)
   }
 
-    function processStringCh(str) {  
-        if(requestJava == "true"){
-          // vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
-          var front_and_backArr = str.split("_=front_xxxxxxxxxx_back=_"); 
-          front = front_and_backArr[0]
-          back =  front_and_backArr[1]
-          frontArr = front.split(" ");
-          backArr = back.split(" ");
-          word =backArr[0].trim(); 
-          mp3 = "./audio/word/"+ word;
-          mp3Zh = "./audio/word/"+ word +"_zh"
-        }else{
-          front = part0_2[0]
-          back =  part0_2[2]
-          frontArr = front.split(" ");
-          backArr = back.split(" ");
-          ownerRoom = part0_2[4]
-          word =backArr[0].trim(); 
-          mp3 = "./audio/word/"+ word;
-          mp3Zh = "./audio/word/"+ word +"_zh"
-        }
-        Backend.playSound(mp3);
-        return front;  
-    }
 
      function shuffleArray(array) {
         // 打乱数组顺序（Fisher-Yates 洗牌算法）
@@ -309,14 +339,15 @@ Item {  //row Item
         }
     }
 
-    function processString(str) {
-         // vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
-          var front_and_backArr = str.split("_=front_xxxxxxxxxx_back=_"); 
+    function processString(front_and_back) {
+          var front_and_backArr = front_and_back.split("_=front_xxxxxxxxxx_back=_"); 
           front = front_and_backArr[0]
           back =  front_and_backArr[1]
           frontArr = front.split(" ");
           backArr = back.split(" ");
-          word =backArr[0].trim(); 
+          word = backArr[0].trim(); 
+          mp3 = "./audio/word/"+ word;
+          mp3Zh = "./audio/word/"+ word +"_zh"
           
             var finalParts = [];  
             var subParts = splitWordAndAddLetters(word);  

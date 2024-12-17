@@ -25,7 +25,7 @@ Flickable {
         Layout.rightMargin: 16
         Layout.fillWidth: true
         //text: luatr("$RoomName").arg(Self.screenName)
-        text: "1_word"
+        text: "192.168.3.7"
       }
     }
 
