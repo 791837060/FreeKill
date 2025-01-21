@@ -261,6 +261,9 @@ local wordSound = "October";
 local lastSoundPlayTime = 0 -- 初始化为0或者上一次系统时间
 -- wordSound .. "_zh" playSoundIfAllowed(room, wordSound .. "_zh")
 function playSoundIfAllowed(room, wordSound)  
+  if wordSound == nil then
+      return
+  end
   local currentTime = os.time() -- 获取当前系统时间（秒为单位）  
   local timeSinceLastPlay = currentTime - lastSoundPlayTime -- 计算自上次播放以来的时间差 
   if timeSinceLastPlay >= 10 then -- 如果距离上次播放已经超过10秒
@@ -353,8 +356,11 @@ GameEvent.functions[GameEvent.Phase] = function(self)
           local use = room:handleUseCardReply(player, result)
           if use then
             room:useCard(use)
-            print("这是出牌 wordSound = " .. wordSound)
-            playSoundIfAllowed(room, wordSound)
+            if wordSound ~= nil then
+              print("这是出牌 wordSound = " .. wordSound)
+              playSoundIfAllowed(room, wordSound)
+            end
+            
             if player.id < 0 then -- Robot
               
             else
