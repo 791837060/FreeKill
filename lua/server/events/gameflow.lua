@@ -553,7 +553,7 @@ function showWord(player,room)
         local str_front_and_back = front.."_=front_xxxxxxxxxx_back=_"..back
         -- vi./vt.写字，写 皇冠(编码)+日(拼音)+特(拼音) 戴着皇冠的日本特务在写字_=front_xxxxxxxxxx_back=_write 戴着皇冠的日本特务在写字 w皇冠(编码)+ri日(拼音)+te特(拼音)
         -- local msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-"..requestJava.."-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back.."-xxxxxx-"..room.wordList
-        local msg = '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "aa": "false"}'
+        local msg = '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "player": "'..player._splayer:getScreenName()..'", "aa": "false"}'
         while true do
           print("msg = " .. msg)
           local input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml",   msg)
@@ -572,7 +572,7 @@ function showWord(player,room)
           front = front_and_back_arr[1]
           subStr = splitWord(front_and_back_word)
           -- msg = front.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back.."-xxxxxx-"..room.wordList
-          msg = '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "aa": "false"}'
+          msg = '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "player": "'..player._splayer:getScreenName()..'", "aa": "false"}'
           -- print(result)
           
           while not (string.lower(remove_spaces(result)) == string.lower(remove_spaces(front_and_back_word))) do
@@ -584,7 +584,7 @@ function showWord(player,room)
               aa = "true"
             end
             --input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", back.."-xxxxxx-"..subStr.."-xxxxxx-"..back.."-xxxxxx-false-xxxxxx-"..ownerRoom.."-xxxxxx-"..str_front_and_back.."-xxxxxx-"..room.wordList)
-            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "false", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "aa": "'..aa..'"}')
+            input_front_back_result = room:askForCustomDialog(player, "simayi", "FK/RoomElement/TestDialog.qml", '{"front": "'..front..'",  "back": "'..back..'", "requestJava": "false", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'", "player": "'..player._splayer:getScreenName()..'", "aa": "'..aa..'"}')
             -- print("input_front_back_result = ".. input_front_back_result)
             input_front_back = input_front_back_result
             input_front_back_result_arr = split(input_front_back_result,",");

@@ -20,6 +20,7 @@ GraphicsBox {
     property var requestJava
     property var aa
     property var spring_ip_or_room_name
+    property var playerName
     property var part0_2
     property var front_back
     property var jsonObject
@@ -298,6 +299,10 @@ Item {  //row Item
   }
 
   /** 每按错一个字母计 1 次（字母变红时累计） */
+  function ankiCall(cmd) {
+    return Backend.getOneWord(spring_ip_or_room_name, cmd, playerName);
+  }
+
   function countTypingMistakes(inputText, name) {
     if (inputText.length <= lastInputForMistake.length) {
       lastInputForMistake = inputText;
@@ -305,7 +310,7 @@ Item {  //row Item
     }
     for (var i = lastInputForMistake.length; i < inputText.length; i++) {
       if (i >= name.length || inputText.charAt(i) !== name.charAt(i)) {
-        Backend.getOneWord(spring_ip_or_room_name, "wrong");
+        ankiCall("wrong");
       }
     }
     lastInputForMistake = inputText;
@@ -320,13 +325,13 @@ Item {  //row Item
     var target = (word === null || word === Qt.undefined) ? "" : word.trim().toLowerCase();
     if (ans === "aa") {
       console.log("[Anki] finishWord 放弃 aa → giveup");
-      Backend.getOneWord(spring_ip_or_room_name, "giveup");
+      ankiCall("giveup");
     } else if (ans === target) {
       console.log("[Anki] finishWord 答对 → done");
-      Backend.getOneWord(spring_ip_or_room_name, "done");
+      ankiCall("done");
     } else {
       console.log("[Anki] finishWord 答错 → wrong");
-      Backend.getOneWord(spring_ip_or_room_name, "wrong");
+      ankiCall("wrong");
     }
     ClientInstance.replyToServer("", answerText + "," + front_back);
     finished();
@@ -348,10 +353,13 @@ Item {  //row Item
      requestJava = jsonObject.requestJava
      aa = jsonObject.aa
      spring_ip_or_room_name = jsonObject.ip
+     playerName = jsonObject.player || ""
+     if (!playerName && typeof Self !== "undefined" && Self && Self.screenName)
+       playerName = Self.screenName
      resetTypingTrack()
      if(requestJava == "true"){
        front_back = jsonObject.str_front_and_back;
-       var front_back_temp = Backend.getOneWord(spring_ip_or_room_name, "no");
+       var front_back_temp = ankiCall("no");
        console.log("ip:"+spring_ip_or_room_name+"  front_back_temp: " + front_back_temp);
        if (front_back_temp && front_back_temp.indexOf("_=front_xxxxxxxxxx_back=_") !== -1) {
            front_back = front_back_temp

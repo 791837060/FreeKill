@@ -375,8 +375,10 @@ void QmlBackend::playSoundWav(const QString &name, int index) {
 }
 
 QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
-                               const QString &rightWord) {
-  const QString deckUser = spring_ip_or_room_name.trimmed();
+                               const QString &rightWord,
+                               const QString &playerName) {
+  AnkiConnect::setAnkiRoom(spring_ip_or_room_name);
+  const QString deckPlayer = playerName.trimmed();
 
   if (rightWord == "wrong") {
     AnkiConnect::recordWrongAttempt();
@@ -401,14 +403,15 @@ QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
     return {};
   }
 
-  const auto wordPair = AnkiConnect::getNextDueCard(-1, deckUser);
+  const auto wordPair = AnkiConnect::getNextDueCard(-1, deckPlayer);
   if (!wordPair.has_value()) {
     AnkiConnect::clearActiveCard();
     return {};
   }
 
   const QString result = wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
-  qDebug() << "[Anki] getOneWord deckUser:" << deckUser << "result:" << result;
+  qDebug() << "[Anki] getOneWord player:" << deckPlayer << "room:" << spring_ip_or_room_name
+           << "result:" << result;
   return result;
 }
 

@@ -17,9 +17,9 @@
 
 namespace {
 
-constexpr auto ANKI_URL = "http://127.0.0.1:8765";
 constexpr int API_VERSION = 6;
 constexpr auto LOG_PREFIX = "[Anki]";
+constexpr ushort ANKI_PORT = 8766; // 8766 nginx 8765
 
 const QStringList DUE_QUERIES = {"is:due prop:due<1", "is:due"};
 const QStringList NEW_QUERIES = {"is:new"};
@@ -27,6 +27,7 @@ const QStringList NEW_QUERIES = {"is:new"};
 qint64 g_activeCardId = -1;
 int g_mistakeCount = 0;
 QString g_nextPool = "due";
+QString g_ankiBaseUrl;
 QNetworkAccessManager *g_network = nullptr;
 
 QNetworkAccessManager *networkManager() {
@@ -66,6 +67,29 @@ QStringList withDeckFilter(const QStringList &queries, const QString &deck) {
   return filtered;
 }
 
+QString ankiHostFromRoomName(const QString &roomName) {
+  QString host = roomName.trimmed();
+  for (const auto &suffix :
+       {QStringLiteral("_free"), QStringLiteral("_gao"), QStringLiteral("_chu")}) {
+    if (host.endsWith(suffix)) {
+      host.chop(suffix.size());
+      break;
+    }
+  }
+
+  static const QRegularExpression ipRegex(
+      R"(^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$)");
+  if (ipRegex.match(host).hasMatch())
+    return host;
+
+  static const QRegularExpression findIp(R"((?:[0-9]{1,3}\.){3}[0-9]{1,3})");
+  const auto match = findIp.match(roomName);
+  if (match.hasMatch())
+    return match.captured(0);
+
+  return host;
+}
+
 QString summarizeAnkiResult(const QString &action, const QJsonValue &result) {
   if (result.isArray()) {
     const auto arr = result.toArray();
@@ -99,12 +123,17 @@ QString summarizeAnkiResult(const QString &action, const QJsonValue &result) {
 
 std::optional<QJsonValue> queryAnki(const QString &action,
                                     const QJsonObject &params = {}) {
-  if (!params.isEmpty() && action != "findCards" && action != "findNotes")
-    logInfo(QString("→ %1").arg(action), params.toVariantMap());
-  else
-    logInfo(QString("→ %1").arg(action));
+  if (g_ankiBaseUrl.isEmpty()) {
+    logWarn("AnkiConnect 地址未设置，请先传入房间名");
+    return std::nullopt;
+  }
 
-  QUrl url(ANKI_URL);
+  if (!params.isEmpty() && action != "findCards" && action != "findNotes")
+    logInfo(QString("→ %1 %2").arg(action, g_ankiBaseUrl), params.toVariantMap());
+  else
+    logInfo(QString("→ %1 %2").arg(action, g_ankiBaseUrl));
+
+  QUrl url(g_ankiBaseUrl);
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
@@ -238,8 +267,8 @@ QStringList findCardIdsByQueries(const QStringList &queries,
   return {};
 }
 
-QStringList findStudyCardIds(const QString &username) {
-  const auto deck = AnkiConnect::getAnkiDeckForUser(username);
+QStringList findStudyCardIds(const QString &playerName) {
+  const auto deck = AnkiConnect::getAnkiDeckForUser(playerName);
   const QStringList dueQueries = withDeckFilter(DUE_QUERIES, deck);
   const QStringList newQueries = withDeckFilter(NEW_QUERIES, deck);
 
@@ -319,8 +348,9 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
 
 namespace AnkiConnect {
 
-QString getAnkiDeckForUser(const QString &username) {
-  return username.trimmed().toLower() == "ul" ? "31" : "61";
+QString getAnkiDeckForUser(const QString &playerName) {
+  // ul 玩家 → deck 31，其他玩家 → deck 61（与 room.wordList / ip 无关）
+  return playerName.trimmed().toLower() == "ul" ? "31" : "61";
 }
 
 AnkiEase easeFromMistakes(int mistakeCount) {
@@ -361,6 +391,14 @@ void clearActiveCard() {
   g_mistakeCount = 0;
 }
 
+void setAnkiRoom(const QString &roomName) {
+  const QString host = ankiHostFromRoomName(roomName);
+  g_ankiBaseUrl = QString("http://%1:%2").arg(host).arg(ANKI_PORT);
+  logInfo(QString("AnkiConnect 房间 %1 → %2").arg(roomName, g_ankiBaseUrl));
+}
+
+QString ankiRoomUrl() { return g_ankiBaseUrl; }
+
 bool submitFeedback(int mistakeCount) {
   const auto ease = easeFromMistakes(mistakeCount);
   const bool ok = answerDueCard(ease, mistakeCount);
@@ -373,17 +411,17 @@ bool submitFeedback(int mistakeCount) {
   return ok;
 }
 
-std::optional<WordPair> getNextDueCard(qint64 skipCardId, const QString &username) {
+std::optional<WordPair> getNextDueCard(qint64 skipCardId, const QString &playerName) {
   try {
-    const auto deck = getAnkiDeckForUser(username);
-    logInfo(QString("用户 %1 → 牌组 %2")
-                .arg(username.isEmpty() ? "(未登录)" : username, deck));
+    const auto deck = getAnkiDeckForUser(playerName);
+    logInfo(QString("玩家 %1 → 牌组 %2")
+                .arg(playerName.isEmpty() ? "(未登录)" : playerName, deck));
 
     for (int attempt = 0; attempt < 3; ++attempt) {
       if (attempt > 0)
         QThread::msleep(100);
 
-      const auto cardIdStrings = findStudyCardIds(username);
+      const auto cardIdStrings = findStudyCardIds(playerName);
       if (cardIdStrings.isEmpty()) {
         if (skipCardId < 0)
           logWarn("无可学卡片（复习+新卡均为空）");

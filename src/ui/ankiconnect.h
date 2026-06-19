@@ -17,7 +17,7 @@ struct WordPair {
 /** Anki reviewer ease: 1=Again 2=Hard 3=Good 4=Easy */
 using AnkiEase = int;
 
-QString getAnkiDeckForUser(const QString &username);
+QString getAnkiDeckForUser(const QString &playerName);
 AnkiEase easeFromMistakes(int mistakeCount);
 QString easeLabelZh(AnkiEase ease);
 void resetMistakeCount();
@@ -25,8 +25,10 @@ void recordWrongAttempt();
 int mistakeCount();
 bool submitFeedback(int mistakeCount);
 void clearActiveCard();
+void setAnkiRoom(const QString &roomName);
+QString ankiRoomUrl();
 std::optional<WordPair> getNextDueCard(qint64 skipCardId = -1,
-                                       const QString &username = QString());
+                                       const QString &playerName = QString());
 bool answerDueCard(AnkiEase ease, int mistakeCount = -1);
 qint64 activeCardId();
 
