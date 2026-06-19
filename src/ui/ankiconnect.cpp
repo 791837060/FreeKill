@@ -27,6 +27,13 @@ const QStringList NEW_QUERIES = {"is:new"};
 qint64 g_activeCardId = -1;
 int g_mistakeCount = 0;
 QString g_nextPool = "due";
+QNetworkAccessManager *g_network = nullptr;
+
+QNetworkAccessManager *networkManager() {
+  if (!g_network)
+    g_network = new QNetworkAccessManager();
+  return g_network;
+}
 
 void logInfo(const QString &message, const QVariant &detail = {}) {
   if (detail.isValid())
@@ -59,12 +66,44 @@ QStringList withDeckFilter(const QStringList &queries, const QString &deck) {
   return filtered;
 }
 
+QString summarizeAnkiResult(const QString &action, const QJsonValue &result) {
+  if (result.isArray()) {
+    const auto arr = result.toArray();
+    if (action == "findCards" || action == "findNotes") {
+      QString firstId;
+      if (!arr.isEmpty())
+        firstId = QString::number(jsonToCardId(arr.first()));
+      return QString("%1 条，首张 %2").arg(arr.size()).arg(firstId.isEmpty() ? "-" : firstId);
+    }
+    if (action == "cardsInfo" && !arr.isEmpty() && arr.first().isObject()) {
+      const auto card = arr.first().toObject();
+      return QString("cardId=%1 note=%2 deck=%3")
+          .arg(jsonToCardId(card.value("cardId")))
+          .arg(jsonToCardId(card.value("note")))
+          .arg(card.value("deckName").toString());
+    }
+    if (action == "notesInfo" && !arr.isEmpty() && arr.first().isObject()) {
+      const auto note = arr.first().toObject();
+      return QString("noteId=%1 fields=%2")
+          .arg(jsonToCardId(note.value("noteId")))
+          .arg(note.value("fields").toObject().keys().join(','));
+    }
+    if (action == "answerCards" && !arr.isEmpty())
+      return arr.first().toBool() ? "true" : "false";
+    return QString("%1 项").arg(arr.size());
+  }
+  if (result.isDouble() || result.isBool())
+    return result.toVariant().toString();
+  return {};
+}
+
 std::optional<QJsonValue> queryAnki(const QString &action,
                                     const QJsonObject &params = {}) {
-  logInfo(QString("→ %1").arg(action),
-          params.isEmpty() ? QVariant() : QVariant(params.toVariantMap()));
+  if (!params.isEmpty() && action != "findCards" && action != "findNotes")
+    logInfo(QString("→ %1").arg(action), params.toVariantMap());
+  else
+    logInfo(QString("→ %1").arg(action));
 
-  QNetworkAccessManager manager;
   QUrl url(ANKI_URL);
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -75,8 +114,8 @@ std::optional<QJsonValue> queryAnki(const QString &action,
       {"params", params},
   };
 
-  QNetworkReply *reply =
-      manager.post(request, QJsonDocument(body).toJson(QJsonDocument::Compact));
+  QNetworkReply *reply = networkManager()->post(
+      request, QJsonDocument(body).toJson(QJsonDocument::Compact));
 
   QEventLoop loop;
   QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
@@ -109,8 +148,9 @@ std::optional<QJsonValue> queryAnki(const QString &action,
     return std::nullopt;
   }
 
-  logInfo(QString("✓ %1").arg(action), obj.value("result").toVariant());
-  return obj.value("result");
+  const auto result = obj.value("result");
+  logInfo(QString("✓ %1").arg(action), summarizeAnkiResult(action, result));
+  return result;
 }
 
 QString getField(const QJsonObject &fields, const QStringList &names) {
@@ -189,13 +229,10 @@ QStringList findCardIdsByQueries(const QStringList &queries,
     if (ids.isEmpty())
       continue;
 
-    QStringList idStrings;
-    for (const auto &id : ids)
-      idStrings << QString::number(jsonToCardId(id));
-
+    const qint64 firstId = jsonToCardId(ids.first());
     logInfo(QString("findCards(%1) [%2]").arg(query, label),
-            QString("%1 张").arg(ids.size()));
-    return idStrings;
+            QString("共 %1 张，取首张 %2").arg(ids.size()).arg(firstId));
+    return {QString::number(firstId)};
   }
 
   return {};
@@ -258,7 +295,6 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
     return std::nullopt;
 
   const auto fields = notes.first().toObject().value("fields").toObject();
-  logInfo("原始字段名", fields.keys());
 
   const auto pair = mapFieldsToWordPair(fields);
   if (!pair.has_value()) {
@@ -314,7 +350,8 @@ void resetMistakeCount() { g_mistakeCount = 0; }
 
 void recordWrongAttempt() {
   g_mistakeCount++;
-  logInfo(QString("单词输错累计 %1 次").arg(g_mistakeCount));
+  if (g_mistakeCount <= 3 || g_mistakeCount % 5 == 0)
+    logInfo(QString("单词输错累计 %1 次").arg(g_mistakeCount));
 }
 
 int mistakeCount() { return g_mistakeCount; }
@@ -342,9 +379,9 @@ std::optional<WordPair> getNextDueCard(qint64 skipCardId, const QString &usernam
     logInfo(QString("用户 %1 → 牌组 %2")
                 .arg(username.isEmpty() ? "(未登录)" : username, deck));
 
-    for (int attempt = 0; attempt < 8; ++attempt) {
+    for (int attempt = 0; attempt < 3; ++attempt) {
       if (attempt > 0)
-        QThread::msleep(250);
+        QThread::msleep(100);
 
       const auto cardIdStrings = findStudyCardIds(username);
       if (cardIdStrings.isEmpty()) {
