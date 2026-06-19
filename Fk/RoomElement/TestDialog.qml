@@ -23,6 +23,8 @@ GraphicsBox {
     property var part0_2
     property var front_back
     property var jsonObject
+    property string lastInputForMistake: ""
+    property bool wordSubmitted: false
 
   id: root
   //title.text: Backend.translate("en")
@@ -181,7 +183,8 @@ Item { //row Item
     return;
 }
  
-                      var name = word.trim().toLowerCase(); // 假设name是一个已知的字符串，您可能需要根据实际情况修改  
+                      var name = word.trim().toLowerCase();
+                      root.countTypingMistakes(inputText, name);
                       var minLength = Math.min(inputText.length, name.length);  
             
                       // 检查input1的文本和name的每个字符是否相等  
@@ -289,7 +292,30 @@ Item {  //row Item
      } //Column Item
   } //Column end
 
+  function resetTypingTrack() {
+    lastInputForMistake = "";
+    wordSubmitted = false;
+  }
+
+  /** 每按错一个字母计 1 次（字母变红时累计） */
+  function countTypingMistakes(inputText, name) {
+    if (inputText.length <= lastInputForMistake.length) {
+      lastInputForMistake = inputText;
+      return;
+    }
+    for (var i = lastInputForMistake.length; i < inputText.length; i++) {
+      if (i >= name.length || inputText.charAt(i) !== name.charAt(i)) {
+        Backend.getOneWord(spring_ip_or_room_name, "wrong");
+      }
+    }
+    lastInputForMistake = inputText;
+  }
+
   function finishWord(answerText) {
+    if (wordSubmitted)
+      return;
+    wordSubmitted = true;
+
     var ans = answerText.trim().toLowerCase();
     var target = (word === null || word === Qt.undefined) ? "" : word.trim().toLowerCase();
     if (ans === "aa") {
@@ -322,6 +348,7 @@ Item {  //row Item
      requestJava = jsonObject.requestJava
      aa = jsonObject.aa
      spring_ip_or_room_name = jsonObject.ip
+     resetTypingTrack()
      if(requestJava == "true"){
        front_back = jsonObject.str_front_and_back;
        var front_back_temp = Backend.getOneWord(spring_ip_or_room_name, "no");

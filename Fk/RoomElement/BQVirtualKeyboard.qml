@@ -274,6 +274,7 @@ Rectangle {
                         id: tapHandler3
                         onTapped: {
                             input1.text = ""
+                            root.resetTypingTrack()
                         }
                     }
             }
@@ -520,8 +521,7 @@ Rectangle {
                 TapHandler {
                     id: tapHandler9
                     onTapped: {
-                        ClientInstance.replyToServer("", input1.text+","+root.front_back);
-                        finished(); 
+                        root.finishWord(input1.text);
                     }
                 }
                   
