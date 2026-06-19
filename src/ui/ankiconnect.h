@@ -20,6 +20,11 @@ using AnkiEase = int;
 QString getAnkiDeckForUser(const QString &username);
 AnkiEase easeFromMistakes(int mistakeCount);
 QString easeLabelZh(AnkiEase ease);
+void resetMistakeCount();
+void recordWrongAttempt();
+int mistakeCount();
+bool submitFeedback(int mistakeCount);
+void clearActiveCard();
 std::optional<WordPair> getNextDueCard(qint64 skipCardId = -1,
                                        const QString &username = QString());
 bool answerDueCard(AnkiEase ease, int mistakeCount = -1);

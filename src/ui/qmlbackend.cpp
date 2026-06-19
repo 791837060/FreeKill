@@ -376,28 +376,36 @@ void QmlBackend::playSoundWav(const QString &name, int index) {
 
 QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
                                const QString &rightWord) {
-  // room.wordList 用作牌组选择：ul → deck 31，其他 → deck 61
   const QString deckUser = spring_ip_or_room_name.trimmed();
+
+  if (rightWord == "wrong") {
+    AnkiConnect::recordWrongAttempt();
+    return {};
+  }
+
+  if (rightWord == "done") {
+    AnkiConnect::submitFeedback(AnkiConnect::mistakeCount());
+    return {};
+  }
+
+  if (rightWord == "giveup") {
+    const int mistakes = qMax(AnkiConnect::mistakeCount(), 3);
+    AnkiConnect::submitFeedback(mistakes);
+    return {};
+  }
 
   bool mistakeOk = false;
   const int mistakeCount = rightWord.toInt(&mistakeOk);
   if (rightWord != "no" && mistakeOk) {
-    const auto ease = AnkiConnect::easeFromMistakes(mistakeCount);
-    const bool ok = AnkiConnect::answerDueCard(ease, mistakeCount);
-    qInfo() << "[Anki] getOneWord 反馈结果:"
-            << (ok ? "成功" : "失败")
-            << AnkiConnect::easeLabelZh(ease)
-            << "输错" << mistakeCount << "次";
-    qDebug() << "[Anki] getOneWord 反馈结果:"
-             << (ok ? "成功" : "失败")
-             << AnkiConnect::easeLabelZh(ease)
-             << "输错" << mistakeCount << "次";
+    AnkiConnect::submitFeedback(mistakeCount);
     return {};
   }
 
   const auto wordPair = AnkiConnect::getNextDueCard(-1, deckUser);
-  if (!wordPair.has_value())
+  if (!wordPair.has_value()) {
+    AnkiConnect::clearActiveCard();
     return {};
+  }
 
   const QString result = wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
   qDebug() << "[Anki] getOneWord deckUser:" << deckUser << "result:" << result;

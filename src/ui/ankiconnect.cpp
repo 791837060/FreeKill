@@ -25,6 +25,7 @@ const QStringList DUE_QUERIES = {"is:due prop:due<1", "is:due"};
 const QStringList NEW_QUERIES = {"is:new"};
 
 qint64 g_activeCardId = -1;
+int g_mistakeCount = 0;
 QString g_nextPool = "due";
 
 void logInfo(const QString &message, const QVariant &detail = {}) {
@@ -268,6 +269,7 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
   }
 
   g_activeCardId = cardId;
+  g_mistakeCount = 0;
   logInfo("学习卡片",
           QJsonObject{{"cardId", QString::number(cardId)},
                       {"deck", card.value("deckName").toString()},
@@ -306,6 +308,32 @@ QString easeLabelZh(AnkiEase ease) {
   default:
     return "未知";
   }
+}
+
+void resetMistakeCount() { g_mistakeCount = 0; }
+
+void recordWrongAttempt() {
+  g_mistakeCount++;
+  logInfo(QString("单词输错累计 %1 次").arg(g_mistakeCount));
+}
+
+int mistakeCount() { return g_mistakeCount; }
+
+void clearActiveCard() {
+  g_activeCardId = -1;
+  g_mistakeCount = 0;
+}
+
+bool submitFeedback(int mistakeCount) {
+  const auto ease = easeFromMistakes(mistakeCount);
+  const bool ok = answerDueCard(ease, mistakeCount);
+  const QString resultText =
+      QString("[Anki] getOneWord 反馈结果: %1 %2 输错 %3 次")
+          .arg(ok ? "成功" : "失败", easeLabelZh(ease))
+          .arg(mistakeCount);
+  logInfo(resultText);
+  qDebug() << resultText;
+  return ok;
 }
 
 std::optional<WordPair> getNextDueCard(qint64 skipCardId, const QString &username) {

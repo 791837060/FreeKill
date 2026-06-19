@@ -23,7 +23,6 @@ GraphicsBox {
     property var part0_2
     property var front_back
     property var jsonObject
-    property int wrongAttempts: 0
 
   id: root
   //title.text: Backend.translate("en")
@@ -211,7 +210,7 @@ Item { //row Item
                       }
 
                       if(input1.text.trim().toLowerCase() == "aa"){
-                        finishWord("aa", Math.max(wrongAttempts, 3));
+                        finishWord("aa");
                       }
                   }  
         
@@ -290,10 +289,19 @@ Item {  //row Item
      } //Column Item
   } //Column end
 
-  function finishWord(answerText, mistakeOverride) {
-    var mistakes = mistakeOverride !== undefined ? mistakeOverride : wrongAttempts;
-    console.log("[Anki] finishWord 提交反馈, 输错次数=" + mistakes);
-    Backend.getOneWord(spring_ip_or_room_name, String(mistakes));
+  function finishWord(answerText) {
+    var ans = answerText.trim().toLowerCase();
+    var target = (word === null || word === Qt.undefined) ? "" : word.trim().toLowerCase();
+    if (ans === "aa") {
+      console.log("[Anki] finishWord 放弃 aa → giveup");
+      Backend.getOneWord(spring_ip_or_room_name, "giveup");
+    } else if (ans === target) {
+      console.log("[Anki] finishWord 答对 → done");
+      Backend.getOneWord(spring_ip_or_room_name, "done");
+    } else {
+      console.log("[Anki] finishWord 答错 → wrong");
+      Backend.getOneWord(spring_ip_or_room_name, "wrong");
+    }
     ClientInstance.replyToServer("", answerText + "," + front_back);
     finished();
     Backend.playSound(mp3);
@@ -315,7 +323,6 @@ Item {  //row Item
      aa = jsonObject.aa
      spring_ip_or_room_name = jsonObject.ip
      if(requestJava == "true"){
-       wrongAttempts = 0
        front_back = jsonObject.str_front_and_back;
        var front_back_temp = Backend.getOneWord(spring_ip_or_room_name, "no");
        console.log("ip:"+spring_ip_or_room_name+"  front_back_temp: " + front_back_temp);
@@ -325,7 +332,6 @@ Item {  //row Item
            front_back = jsonObject.str_front_and_back;
         }
      }else{
-       wrongAttempts++
        front_back = jsonObject.str_front_and_back;
      }
      en_line0_lower = processString(front_back)
