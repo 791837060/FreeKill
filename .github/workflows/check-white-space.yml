@@ -10,7 +10,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
     - name: Check trailing space
       run: if grep -rIn "[[:blank:]]$"; then exit 2; else echo OK; fi
     - name: Check no new line at EOF
