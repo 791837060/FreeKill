@@ -22,7 +22,8 @@ GraphicsBox {
     property var spring_ip_or_room_name
     property var part0_2
     property var front_back
-    property var jsonObject 
+    property var jsonObject
+    property int wrongAttempts: 0
 
   id: root
   //title.text: Backend.translate("en")
@@ -147,9 +148,7 @@ GraphicsBox {
                 if (event.key == Qt.Key_Return || event.key == Qt.Key_Enter) {
                     // console.log("回车键被按下")
                     // 在这里添加你希望在按下回车键时执行的代码
-                    ClientInstance.replyToServer("", input1.text+","+front_back);
-                    finished();
-                    Backend.playSound(mp3); 
+                    finishWord(input1.text);
                 }
             }
             width: 0
@@ -199,9 +198,7 @@ Item { //row Item
                       if (inputText.length > name.length) {  
                           textColor = "red";  
                           if (inputText.length > (name.length+1)) { 
-                            ClientInstance.replyToServer("", input1.text+","+front_back);
-                            finished();
-                            Backend.playSound(mp3); 
+                            finishWord(input1.text);
                           }
                       } else if (isEqual) {  
                           textColor = "green";  
@@ -210,15 +207,11 @@ Item { //row Item
                       }
 
                       if(input1.text.trim().toLowerCase() == word.trim().toLowerCase()){
-                        ClientInstance.replyToServer("", input1.text+","+front_back);
-                        finished();
-                        Backend.playSound(mp3); 
+                        finishWord(input1.text);
                       }
 
                       if(input1.text.trim().toLowerCase() == "aa"){
-                        ClientInstance.replyToServer("", "aa"+","+front_back);
-                        finished();
-                        Backend.playSound(mp3); 
+                        finishWord("aa", Math.max(wrongAttempts, 3));
                       }
                   }  
         
@@ -245,10 +238,7 @@ Item {  //row Item
           width: 100
           height: 50
           onClicked: {
-            
-            ClientInstance.replyToServer("", input1.text+","+front_back);
-            finished();
-            Backend.playSound(mp3); 
+            finishWord(input1.text);
           }
           //font.weight: Font.Bold // 设置字体加粗 
           //font.pixelSize: 20
@@ -300,6 +290,15 @@ Item {  //row Item
      } //Column Item
   } //Column end
 
+  function finishWord(answerText, mistakeOverride) {
+    var mistakes = mistakeOverride !== undefined ? mistakeOverride : wrongAttempts;
+    console.log("[Anki] finishWord 提交反馈, 输错次数=" + mistakes);
+    Backend.getOneWord(spring_ip_or_room_name, String(mistakes));
+    ClientInstance.replyToServer("", answerText + "," + front_back);
+    finished();
+    Backend.playSound(mp3);
+  }
+
   function loadData(data) {
     //{"front": "'..front..'",  "back": "'..back..'", "requestJava": "'..requestJava..'", "str_front_and_back": "'..str_front_and_back..'", "ip": "'..room.wordList..'"}
     
@@ -316,6 +315,7 @@ Item {  //row Item
      aa = jsonObject.aa
      spring_ip_or_room_name = jsonObject.ip
      if(requestJava == "true"){
+       wrongAttempts = 0
        front_back = jsonObject.str_front_and_back;
        var front_back_temp = Backend.getOneWord(spring_ip_or_room_name, "no");
        console.log("ip:"+spring_ip_or_room_name+"  front_back_temp: " + front_back_temp);
@@ -325,6 +325,7 @@ Item {  //row Item
            front_back = jsonObject.str_front_and_back;
         }
      }else{
+       wrongAttempts++
        front_back = jsonObject.str_front_and_back;
      }
      en_line0_lower = processString(front_back)

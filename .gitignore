@@ -4,19 +4,35 @@
 /docs/.venv
 /*.o
 /zh_CN.qm
+/lang/zh_CN.qm
 /fk_ver
+
+# vendored headers / submodules (build only, not project source)
+/include/
 
 # IDE & LSP
 /.kdev4/
 /.vscode/
+/.idea/
 /*.user
+CMakeLists.txt.user
 *-swp
 /*.kdev4
 /.cache/
 /tags
+*.iml
 
-# file produced by game
-/FreeKill
+# Release / package / archives (non-source)
+/FreeKill-release/
+
+/FreeKill/
+/*.zip
+*.bak
+
+# Local temp / notes
+/新建*.txt
+
+# file produced by game / runtime
 /FreeKill.exe
 /mymod
 /recording
@@ -30,10 +46,12 @@ freekill-wrap.cxx
 /freekill.server.info.log
 /flist.txt
 
-# windeployqt
+# windeployqt output (project root or release dir)
 /bearer/
+/generic/
 /iconengines/
 /imageformats/
+/networkinformation/
 /platforms/
 /Qt/
 /QtGraphicalEffects/
@@ -43,10 +61,20 @@ freekill-wrap.cxx
 /QtQml/
 /QtMultimedia/
 /multimedia/
+/qml/
 /qmltooling/
 /sqldrivers/
 /styles/
 /tls/
 /translations/
 /*.dll
+/D3Dcompiler_47.dll
+/opengl32sw.dll
+/windeployqt.exe
+
+# local scripts (keep ul_build_win.bat tracked)
 /*.bat
+!/ul_build_win.bat
+
+# android local overrides
+/android/ul_build.sh

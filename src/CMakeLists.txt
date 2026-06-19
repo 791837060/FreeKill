@@ -13,6 +13,7 @@ set(freekill_SRCS
   "server/room.cpp"
   "server/roomthread.cpp"
   "ui/qmlbackend.cpp"
+  "ui/ankiconnect.cpp"
   "swig/freekill-wrap.cxx"
 )
 

@@ -23,8 +23,12 @@ else ()
 endif()
 
 find_package(OpenSSL)
-find_package(Lua)
-find_package(SQLite3)
+# Lua/SQLite headers and libs are bundled (include/, lib/win); skip FindPackage
+# to avoid picking up broken Anaconda paths on Windows.
+if (NOT WIN32 AND NOT ANDROID)
+  find_package(Lua)
+  find_package(SQLite3)
+endif()
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_CXX_STANDARD 11)
