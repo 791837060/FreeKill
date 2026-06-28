@@ -3,43 +3,82 @@
 ---@meta
 
 ---@class fk.Player
-FPlayer = {}
+---@field private id integer
+---@field private screenName string
+---@field private avatar string
+---@field private state integer
+---@field private died boolean
+---@field public _fake_router fk.Client
+local FPlayer = {}
 
----@return integer id
-function FPlayer:getId()end
+---@return integer
+function FPlayer:getId()
+  return self.id
+end
 
----@return string name
-function FPlayer:getScreenName()end
+---@param id integer
+function FPlayer:setId(id)
+  self.id = id
+end
 
----@return string avatar
-function FPlayer:getAvatar()end
+---@return string
+function FPlayer:getScreenName()
+  return self.screenName
+end
 
----@class fk.ServerPlayer : fk.Player
-FServerPlayer = {}
+---@param name string
+function FPlayer:setScreenName(name)
+  self.screenName = name
+end
 
---- Send a request to client, and allow client to reply within *timeout* seconds.
----
---- *timeout* must not be negative or **nil**.
----@param command string
----@param jsonData string
----@param timeout integer
-function FServerPlayer:doRequest(command,jsonData,timeout)end
+---@return string
+function FPlayer:getAvatar()
+  return self.avatar
+end
 
---- Wait for at most *timeout* seconds for reply from client.
----
---- If *timeout* is negative or **nil**, the function will wait forever until get reply.
----@param timeout integer @ seconds to wait
----@return string @ JSON data
----@overload fun()
-function FServerPlayer:waitForReply(timeout)end
+---@param avatar string
+function FPlayer:setAvatar(avatar)
+  self.avatar = avatar
+end
 
---- Notice the client.
----@param command string
----@param jsonData string
-function FServerPlayer:doNotify(command,jsonData)end
+---@return integer
+function FPlayer:getTotalGameTime()
+  return 0
+end
 
-function FServerPlayer:setBusy(_) end
-function FServerPlayer:isBusy(_) end
-function FServerPlayer:setThinking(_) end
+---@param toAdd integer
+function FPlayer:addTotalGameTime(toAdd) end
 
-function FServerPlayer:getState() end
+---@return integer
+function FPlayer:getState()
+  return self.state
+end
+
+---@param state integer
+function FPlayer:setState(state)
+  self.state = state
+end
+
+---@return integer[]
+function FPlayer:getGameData()
+  return self.gamedata
+end
+
+---@param total integer
+---@param win integer
+---@param run integer
+function FPlayer:setGameData(total, win, run)
+  self.gamedata = FkTest.createFakeQList { total, win, run }
+end
+
+---@return boolean
+function FPlayer:isDied()
+  return self.died
+end
+
+---@param died boolean
+function FPlayer:setDied(died)
+  self.died = died
+end
+
+return FPlayer

@@ -4,8 +4,6 @@
 %nodefaultdtor QmlBackend;
 class QmlBackend : public QObject {
 public:
-  void emitNotifyUI(const QString &command, const QString &json_data);
-
   static void cd(const QString &path);
   static QStringList ls(const QString &dir);
   static QString pwd();
@@ -19,42 +17,25 @@ extern QmlBackend *Backend;
 %nodefaultdtor Client;
 class Client : public QObject {
 public:
-  void replyToServer(const QString &command, const QString &json_data);
-  void notifyServer(const QString &command, const QString &json_data);
+  void sendSetupPacket(const QString &pubkey);
+  void setupServerLag(long long server_time);
 
-  LuaFunction callback;
+  void notifyServer(const QByteArray &command, const QString &data);
 
-  ClientPlayer *addPlayer(int id, const QString &name, const QString &avatar);
+  Player *addPlayer(int id, const QString &name, const QString &avatar);
   void removePlayer(int id);
+  Player *getSelf() const;
   void changeSelf(int id);
 
-  void saveRecord(const QString &json, const QString &fname);
+  void saveRecord(const QByteArray &json, const QString &fname);
+  void saveGameData(const QString &mode, const QString &general, const QString &deputy,
+                    const QString &role, int result, const QString &replay,
+                    const QByteArray &room_data, const QByteArray &record);
+  void notifyUI(const QString &command, const QVariant &jsonData);
 };
 
-extern Client *ClientInstance;
-
-%{
-void Client::callLua(const QString& command, const QString& json_data, bool isRequest)
-{
-  Q_ASSERT(callback);
-
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "traceback");
-  lua_replace(L, -2);
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, callback);
-  SWIG_NewPointerObj(L, this, SWIGTYPE_p_Client, 0);
-  lua_pushstring(L, command.toUtf8());
-  lua_pushstring(L, json_data.toUtf8());
-  lua_pushboolean(L, isRequest);
-
-  int error = lua_pcall(L, 4, 0, -6);
-
-  if (error) {
-    const char *error_msg = lua_tostring(L, -1);
-    qCritical() << error_msg;
-    lua_pop(L, 2);
+%extend Client {
+  void installMyAESKey() {
+    $self->installAESKey($self->getAESKey().toLatin1());
   }
-  lua_pop(L, 1);
 }
-%}

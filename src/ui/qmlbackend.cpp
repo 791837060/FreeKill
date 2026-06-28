@@ -1,29 +1,30 @@
-#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "qmlbackend.h"
-#include "ankiconnect.h"
+#include "ui/qmlbackend.h"
 #include <qjsondocument.h>
+#include <qjsonobject.h>
 
 #ifndef FK_SERVER_ONLY
-#include <qaudiooutput.h>
-#include <qmediaplayer.h>
-#include <qrandom.h>
+#include "ui/ankiconnect.h"
+#include <QAudioOutput>
 #include <QNetworkDatagram>
 #include <QDnsLookup>
 
 #include <QClipboard>
 #include <QMediaPlayer>
-#include "mod.h"
+#include <QMessageBox>
+#include <QAbstractButton>
+#include <QtConcurrent>
 #endif
 
 #include <cstdlib>
-#ifndef Q_OS_WASM
-#include "server.h"
-#endif
-#include "client.h"
-#include "util.h"
-#include "replayer.h"
+#include "server/server.h"
+#include "client/client.h"
+#include "client/clientplayer.h"
+#include "client/replayer.h"
+#include "core/util.h"
+#include "core/c-wrapper.h"
+#include "network/router.h"
 
 QmlBackend *Backend = nullptr;
 
@@ -32,19 +33,16 @@ QmlBackend::QmlBackend(QObject *parent) : QObject(parent) {
 #ifndef FK_SERVER_ONLY
   engine = nullptr;
   replayer = nullptr;
-  rsa = RSA_new();
   udpSocket = new QUdpSocket(this);
   udpSocket->bind(0);
   connect(udpSocket, &QUdpSocket::readyRead,
           this, &QmlBackend::readPendingDatagrams);
+  connect(this, &QmlBackend::dialog, this, &QmlBackend::showDialog);
 #endif
 }
 
 QmlBackend::~QmlBackend() {
   Backend = nullptr;
-#ifndef FK_SERVER_ONLY
-  RSA_free(rsa);
-#endif
 }
 
 void QmlBackend::cd(const QString &path) { QDir::setCurrent(path); }
@@ -74,6 +72,43 @@ bool QmlBackend::isDir(const QString &file) {
   return QFileInfo(QUrl(file).path()).isDir();
 }
 
+QJsonObject QmlBackend::readJsonObjectFromFile(const QString &file) {
+  QJsonObject jsonObject;
+  QString s = file;
+
+#ifdef Q_OS_WIN
+  if (s.startsWith("file:///"))
+    s.replace(0, 8, "file://");
+#endif
+
+  // Open the file
+  QFile jsonFile(QUrl(s).path());
+  if (!jsonFile.open(QIODevice::ReadOnly)) {
+    qWarning() << "Failed to open file:" << file;
+    return jsonObject; // Return empty object on failure
+  }
+
+  // Read the file content
+  QByteArray jsonData = jsonFile.readAll();
+  jsonFile.close();
+
+  // Parse the JSON data
+  QJsonParseError parseError;
+  QJsonDocument jsonDoc = QJsonDocument::fromJson(jsonData, &parseError);
+
+  if (parseError.error != QJsonParseError::NoError) {
+    qWarning() << "Failed to parse JSON:" << parseError.errorString();
+    return jsonObject; // Return empty object on parse error
+  }
+
+  if (!jsonDoc.isObject()) {
+    qWarning() << "JSON document is not an object";
+    return jsonObject; // Return empty object if not a JSON object
+  }
+
+  return jsonDoc.object();
+}
+
 #ifndef FK_SERVER_ONLY
 
 QQmlApplicationEngine *QmlBackend::getEngine() const { return engine; }
@@ -83,22 +118,43 @@ void QmlBackend::setEngine(QQmlApplicationEngine *engine) {
 }
 
 void QmlBackend::startServer(ushort port) {
-#ifndef Q_OS_WASM
   if (!ServerInstance) {
-    Server *server = new Server(this);
+    Server *server = new Server(nullptr);
 
     if (!server->listen(QHostAddress::Any, port)) {
       server->deleteLater();
       emit notifyUI("ErrorMsg", tr("Cannot start server!"));
     }
   }
-#endif
 }
 
-void QmlBackend::joinServer(QString address) {
+static ClientPlayer dummyPlayer(0, nullptr);
+
+void QmlBackend::joinServer(QString address, ushort port) {
   if (ClientInstance != nullptr)
     return;
-  Client *client = new Client(this);
+
+  auto future = QtConcurrent::run([&] {
+    auto ret = new Client;
+    ret->moveToThread(qApp->thread());
+    return ret;
+  });
+  QFutureWatcher<Client *> watcher;
+  watcher.setFuture(future);
+
+  QEventLoop loop;
+  connect(&watcher, &QFutureWatcher<Client *>::finished, &loop, &QEventLoop::quit);
+  loop.exec();
+
+  auto client = future.result();
+  client->setParent(this);
+  connect(client, &Client::notifyUI, this, &QmlBackend::notifyUI);
+  engine->rootContext()->setContextProperty("ClientInstance", client);
+  engine->rootContext()->setContextProperty("Self", client->getSelf());
+  connect(client, &Client::destroyed, this, [=](){
+    engine->rootContext()->setContextProperty("Self", &dummyPlayer);
+    engine->rootContext()->setContextProperty("ClientInstance", nullptr);
+  });
   connect(client, &Client::error_message, this, [=](const QString &msg) {
     if (replayer) {
       emit replayerShutdown();
@@ -107,6 +163,12 @@ void QmlBackend::joinServer(QString address) {
     emit notifyUI("ErrorMsg", msg);
     emit notifyUI("BackToStart", "[]");
   });
+  connect(client, &Client::self_changed, this, [=](){
+    engine->rootContext()->setContextProperty("Self", client->getSelf());
+  });
+  connect(client, &Client::toast_message, this, &QmlBackend::showToast);
+
+  /*
   QString addr = "127.0.0.1";
   ushort port = 9527u;
 
@@ -117,7 +179,7 @@ void QmlBackend::joinServer(QString address) {
   } else {
     addr = address;
     // SRV解析查询
-    QDnsLookup* dns = new QDnsLookup(QDnsLookup::SRV, "_freekill._tcp." + addr);
+    QDnsLookup *dns = new QDnsLookup(QDnsLookup::SRV, "_freekill._tcp." + addr);
     QEventLoop eventLoop;
     // 阻塞的SRV解析查询回调
     connect(dns, &QDnsLookup::finished,[&eventLoop](void){
@@ -135,8 +197,9 @@ void QmlBackend::joinServer(QString address) {
       }
     }
   }
+  */
 
-  client->connectToHost(addr, port);
+  client->connectToHost(address, port);
 }
 
 void QmlBackend::quitLobby(bool close) {
@@ -146,114 +209,44 @@ void QmlBackend::quitLobby(bool close) {
   //   ServerInstance->deleteLater();
 }
 
-void QmlBackend::emitNotifyUI(const QString &command, const QString &jsonData) {
-  emit notifyUI(command, jsonData);
-}
-
 QString QmlBackend::translate(const QString &src) {
   if (!ClientInstance)
     return src;
 
-  lua_State *L = ClientInstance->getLuaState();
-  lua_getglobal(L, "Translate");
+  auto L = ClientInstance->getLua();
   auto bytes = src.toUtf8();
-  lua_pushstring(L, bytes.data());
-
-  int err = lua_pcall(L, 1, 1, 0);
-  const char *result = lua_tostring(L, -1);
-  if (err) {
-    qCritical() << result;
-    lua_pop(L, 1);
-    return "";
-  }
-  lua_pop(L, 1);
-  return QString(result);
+  return L->call("Translate", { bytes }).toString();
 }
 
-void QmlBackend::pushLuaValue(lua_State *L, QVariant v) {
-  QVariantList list;
-  switch (v.typeId()) {
-  case QMetaType::Bool:
-    lua_pushboolean(L, v.toBool());
-    break;
-  case QMetaType::Int:
-  case QMetaType::UInt:
-    lua_pushinteger(L, v.toInt());
-    break;
-  case QMetaType::Double:
-    lua_pushnumber(L, v.toDouble());
-    break;
-  case QMetaType::QString: {
-    auto bytes = v.toString().toUtf8();
-    lua_pushstring(L, bytes.data());
-    break;
-  }
-  case QMetaType::QVariantList:
-    lua_newtable(L);
-    list = v.toList();
-    for (int i = 1; i <= list.length(); i++) {
-      lua_pushinteger(L, i);
-      pushLuaValue(L, list[i - 1]);
-      lua_settable(L, -3);
-    }
-    break;
-  default:
-    // qCritical() << "cannot handle QVariant type" << v.typeId();
-    lua_pushnil(L);
-    break;
-  }
-}
-
-QString QmlBackend::callLuaFunction(const QString &func_name,
+QVariant QmlBackend::callLuaFunction(const QString &func_name,
                                     QVariantList params) {
-  if (!ClientInstance) return "{}";
+  if (!ClientInstance) return QVariantMap();
 
-  lua_State *L = ClientInstance->getLuaState();
-  lua_getglobal(L, func_name.toLatin1().data());
-
-  foreach (QVariant v, params) {
-    pushLuaValue(L, v);
-  }
-
-  int err = lua_pcall(L, params.length(), 1, 0);
-  const char *result = lua_tostring(L, -1);
-  if (err) {
-    qCritical() << result;
-    lua_pop(L, 1);
-    return "";
-  }
-  lua_pop(L, 1);
-
-  return QString(result);
+  auto L = ClientInstance->getLua();
+  return L->call(func_name, params);
 }
 
-QString QmlBackend::pubEncrypt(const QString &key, const QString &data) {
-  // 在用公钥加密口令时，也随机生成AES密钥/IV，并随着口令一起加密
-  // AES密钥和IV都是固定16字节的，所以可以放在开头
-  auto key_bytes = key.toLatin1();
-  BIO *keyio = BIO_new_mem_buf(key_bytes.constData(), -1);
-  PEM_read_bio_RSAPublicKey(keyio, &rsa, NULL, NULL);
-  BIO_free_all(keyio);
+QVariant QmlBackend::evalLuaExp(const QString &lua) {
+  if (!ClientInstance) return QVariantMap();
 
-  auto data_bytes = data.toUtf8();
-  auto rand_generator = QRandomGenerator::securelySeeded();
-  QByteArray aes_key_;
-  for (int i = 0; i < 2; i++) {
-    aes_key_.append(QByteArray::number(rand_generator.generate64(), 16));
+  auto L = ClientInstance->getLua();
+  return L->eval(lua);
+}
+
+QString QmlBackend::getPublicServerList() {
+  QFile conf("server-list.json");
+  // TODO: Download new JSON via http
+  if (!conf.exists()) {
+    conf.open(QIODevice::WriteOnly);
+    static const char *init_conf = "[]";
+    conf.write(init_conf);
+    conf.close();
+    return init_conf;
   }
-  if (aes_key_.length() < 32) {
-    aes_key_.append(QByteArray("0").repeated(32 - aes_key_.length()));
-  }
-
-  aes_key = aes_key_;
-
-  data_bytes.prepend(aes_key_);
-
-  unsigned char buf[RSA_size(rsa)];
-  RSA_public_encrypt(data.length() + 32,
-                     (const unsigned char *)data_bytes.constData(), buf, rsa,
-                     RSA_PKCS1_PADDING);
-  return QByteArray::fromRawData((const char *)buf, RSA_size(rsa)).toBase64();
+  conf.open(QIODevice::ReadOnly);
+  auto ret = conf.readAll();
+  conf.close();
+  return ret;
 }
 
 QString QmlBackend::loadConf() {
@@ -293,13 +286,52 @@ void QmlBackend::saveConf(const QString &conf) {
   c.close();
 }
 
-void QmlBackend::replyDelayTest(const QString &screenName,
-                                const QString &cipher) {
-  auto md5 = calcFileMD5();
+QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
+                               const QString &rightWord,
+                               const QString &playerName) {
+  AnkiConnect::setAnkiRoom(spring_ip_or_room_name);
+  const QString deckPlayer = playerName.trimmed();
 
-  QJsonArray arr;
-  arr << screenName << cipher << md5 << FK_VERSION << GetDeviceUuid();
-  ClientInstance->notifyServer("Setup", JsonArray2Bytes(arr));
+  if (rightWord == "wrong") {
+    AnkiConnect::recordWrongAttempt();
+    return {};
+  }
+  if (rightWord == "reset") {
+    AnkiConnect::clearActiveCard();
+    return {};
+  }
+  if (rightWord == "done") {
+    AnkiConnect::submitFeedback(AnkiConnect::mistakeCount());
+    AnkiConnect::clearActiveCard();
+    return {};
+  }
+  if (rightWord == "giveup") {
+    const int mistakes = qMax(AnkiConnect::mistakeCount(), 3);
+    AnkiConnect::submitFeedback(mistakes);
+    AnkiConnect::clearActiveCard();
+    return {};
+  }
+
+  const auto wordPair = AnkiConnect::getNextDueCard(-1, deckPlayer);
+  if (!wordPair.has_value()) {
+    AnkiConnect::clearActiveCard();
+    return {};
+  }
+
+  return wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
+}
+
+int QmlBackend::getWordMistakeCount() {
+  return AnkiConnect::mistakeCount();
+}
+
+QString QmlBackend::getWordAnkiEaseLabel() {
+  return AnkiConnect::easeLabelZh(
+      AnkiConnect::easeFromMistakes(AnkiConnect::mistakeCount()));
+}
+
+void QmlBackend::resetWordSession() {
+  AnkiConnect::clearActiveCard();
 }
 
 void QmlBackend::playSound(const QString &name, int index) {
@@ -324,18 +356,35 @@ void QmlBackend::playSound(const QString &name, int index) {
   if (!QFile::exists(fname))
     return;
 
+#ifdef Q_OS_ANDROID
+  QJniObject::callStaticMethod<void>("org/notify/FreeKill/Helper", "PlaySound",
+      "(Ljava/lang/String;F)V", QJniObject::fromString(fname).object<jstring>(),
+      (float)(m_volume / 100));
+#else
+  if (maxConcurrentPlayback < 0) return;
   auto player = new QMediaPlayer;
   auto output = new QAudioOutput;
-  player->setAudioOutput(output);
-  player->setSource(QUrl::fromLocalFile(fname));
-  output->setVolume(m_volume / 100);
-  connect(player, &QMediaPlayer::playbackStateChanged, this, [=]() {
-    if (player->playbackState() == QMediaPlayer::StoppedState) {
-      player->deleteLater();
-      output->deleteLater();
-    }
+  maxConcurrentPlayback--;
+
+  // 避免windows掉帧 使用线程池
+  auto future = QtConcurrent::run([=, this] {
+    player->setAudioOutput(output);
+    player->setSource(QUrl::fromLocalFile(fname));
+    output->setVolume(m_volume / 100);
+
+    connect(player, &QMediaPlayer::playbackStateChanged, this, [=, this] {
+      auto state = player->playbackState();
+      if (state != QMediaPlayer::PlayingState) {
+        player->deleteLater();
+        output->deleteLater();
+        maxConcurrentPlayback++;
+      }
+    });
+
+    player->play();
   });
-  player->play();
+  Q_UNUSED(future);
+#endif
 }
 
 void QmlBackend::playSoundWav(const QString &name, int index) {
@@ -360,59 +409,34 @@ void QmlBackend::playSoundWav(const QString &name, int index) {
   if (!QFile::exists(fname))
     return;
 
+#ifdef Q_OS_ANDROID
+  QJniObject::callStaticMethod<void>("org/notify/FreeKill/Helper", "PlaySound",
+      "(Ljava/lang/String;F)V", QJniObject::fromString(fname).object<jstring>(),
+      (float)(m_volume / 100));
+#else
+  if (maxConcurrentPlayback < 0) return;
   auto player = new QMediaPlayer;
   auto output = new QAudioOutput;
-  player->setAudioOutput(output);
-  player->setSource(QUrl::fromLocalFile(fname));
-  output->setVolume(m_volume / 100);
-  connect(player, &QMediaPlayer::playbackStateChanged, this, [=]() {
-    if (player->playbackState() == QMediaPlayer::StoppedState) {
-      player->deleteLater();
-      output->deleteLater();
-    }
+  maxConcurrentPlayback--;
+
+  auto future = QtConcurrent::run([=, this] {
+    player->setAudioOutput(output);
+    player->setSource(QUrl::fromLocalFile(fname));
+    output->setVolume(m_volume / 100);
+
+    connect(player, &QMediaPlayer::playbackStateChanged, this, [=, this] {
+      auto state = player->playbackState();
+      if (state != QMediaPlayer::PlayingState) {
+        player->deleteLater();
+        output->deleteLater();
+        maxConcurrentPlayback++;
+      }
+    });
+
+    player->play();
   });
-  player->play();
-}
-
-QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
-                               const QString &rightWord,
-                               const QString &playerName) {
-  AnkiConnect::setAnkiRoom(spring_ip_or_room_name);
-  const QString deckPlayer = playerName.trimmed();
-
-  if (rightWord == "wrong") {
-    AnkiConnect::recordWrongAttempt();
-    return {};
-  }
-
-  if (rightWord == "done") {
-    AnkiConnect::submitFeedback(AnkiConnect::mistakeCount());
-    return {};
-  }
-
-  if (rightWord == "giveup") {
-    const int mistakes = qMax(AnkiConnect::mistakeCount(), 3);
-    AnkiConnect::submitFeedback(mistakes);
-    return {};
-  }
-
-  bool mistakeOk = false;
-  const int mistakeCount = rightWord.toInt(&mistakeOk);
-  if (rightWord != "no" && mistakeOk) {
-    AnkiConnect::submitFeedback(mistakeCount);
-    return {};
-  }
-
-  const auto wordPair = AnkiConnect::getNextDueCard(-1, deckPlayer);
-  if (!wordPair.has_value()) {
-    AnkiConnect::clearActiveCard();
-    return {};
-  }
-
-  const QString result = wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
-  qDebug() << "[Anki] getOneWord player:" << deckPlayer << "room:" << spring_ip_or_room_name
-           << "result:" << result;
-  return result;
+  Q_UNUSED(future);
+#endif
 }
 
 void QmlBackend::copyToClipboard(const QString &s) {
@@ -423,19 +447,6 @@ QString QmlBackend::readClipboard() {
   return QGuiApplication::clipboard()->text();
 }
 
-void QmlBackend::setAESKey(const QString &key) { aes_key = key; }
-
-QString QmlBackend::getAESKey() const { return aes_key; }
-
-void QmlBackend::installAESKey() {
-  ClientInstance->installAESKey(aes_key.toLatin1());
-}
-
-void QmlBackend::createModBackend() {
-  engine->rootContext()->setContextProperty("ModBackend", new ModMaker);
-}
-
-
 void QmlBackend::detectServer() {
   static const char *ask_str = "fkDetectServer";
   udpSocket->writeDatagram(ask_str,
@@ -444,21 +455,14 @@ void QmlBackend::detectServer() {
       9527);
 }
 
-void QmlBackend::getServerInfo(const QString &address) {
-  QString addr = "127.0.0.1";
-  ushort port = 9527u;
+void QmlBackend::getServerInfo(const QString &address, ushort port) {
+  QString addr = address;
+  // ushort port = 9527u;
   static const char *ask_str = "fkGetDetail,";
-
-  if (address.contains(QChar(':'))) {
-    QStringList texts = address.split(QChar(':'));
-    addr = texts.value(0);
-    port = texts.value(1).toUShort();
-  } else {
-    addr = address;
-  }
 
   QByteArray ask(ask_str);
   ask.append(address.toLatin1());
+  ask.append(QString(",%1").arg(port).toUtf8());
 
   if (QHostAddress(addr).isNull()) { // 不是ip？考虑解析域名
     QHostInfo::lookupHost(addr, this, [=](const QHostInfo &host) {
@@ -517,6 +521,42 @@ void QmlBackend::readPendingDatagrams() {
   }
 }
 
+void QmlBackend::showDialog(const QString &type, const QString &text, const QString &orig) {
+  //static const QString title = tr("FreeKill") + " v" + FK_VERSION;
+  QMessageBox *box = nullptr;
+  if (type == "critical") {
+    box = new QMessageBox(QMessageBox::Critical, text, text, QMessageBox::Ok);
+    connect(box, &QMessageBox::buttonClicked, box, &QObject::deleteLater);
+  } else if (type == "info") {
+    box = new QMessageBox(QMessageBox::Information, text, text, QMessageBox::Ok);
+    connect(box, &QMessageBox::buttonClicked, box, &QObject::deleteLater);
+  } else if (type == "warning") {
+    box = new QMessageBox(QMessageBox::Warning, text, text, QMessageBox::Ok);
+    connect(box, &QMessageBox::buttonClicked, box, &QObject::deleteLater);
+  }
+
+  if (box) {
+    if (!orig.isEmpty()) {
+      auto bytes = orig.toLocal8Bit().prepend("help: ");
+      if (tr(bytes) != bytes) box->setInformativeText(tr(bytes));
+    }
+    box->setWindowModality(Qt::NonModal);
+    box->show();
+  }
+}
+
+void QmlBackend::askFixResource() {
+#if defined(Q_OS_ANDROID) || defined(Q_OS_LINUX)
+  auto box = new QMessageBox(QMessageBox::Question, tr("fix resource"),
+      tr("help: fix resource"), QMessageBox::Ok | QMessageBox::Cancel);
+  connect(box, &QMessageBox::accepted, box, []() {
+      QFile::remove("fk_ver"); qApp->exit(); });
+  connect(box, &QMessageBox::finished, box, &QObject::deleteLater);
+  box->setWindowModality(Qt::NonModal);
+  box->show();
+#endif
+}
+
 void QmlBackend::removeRecord(const QString &fname) {
   QFile::remove("recording/" + fname);
 }
@@ -524,7 +564,38 @@ void QmlBackend::removeRecord(const QString &fname) {
 void QmlBackend::playRecord(const QString &fname) {
   auto replayer = new Replayer(this, fname);
   setReplayer(replayer);
+  connect(replayer, &Replayer::destroyed, this, [=](){
+    setReplayer(nullptr);
+  });
   replayer->start();
+}
+
+void QmlBackend::playBlobRecord(int id) {
+  auto replayer = new Replayer(this, id);
+  setReplayer(replayer);
+  connect(replayer, &Replayer::destroyed, this, [=](){
+    setReplayer(nullptr);
+  });
+  replayer->start();
+}
+
+QString QmlBackend::saveBlobRecordToFile(int id) {
+  auto result = ClientInstance->database().select(QString(
+    "SELECT hex(recording) as r FROM myGameRecordings WHERE id = %1;").arg(id));
+  auto raw = QByteArray::fromHex(result[0]["r"].toLatin1());
+  auto data = qUncompress(raw);
+  auto arr = QCborValue::fromCbor(data).toArray();
+  auto fileName = arr[1].toByteArray();
+  ClientInstance->saveRecord(data, fileName);
+  return fileName;
+}
+
+void QmlBackend::reviewGameOverScene(int id) {
+  auto result = ClientInstance->database().select(QString(
+    "SELECT hex(room_data) as r FROM myGameRoomData WHERE id = %1;").arg(id));
+  auto raw = QByteArray::fromHex(result[0]["r"].toLatin1());
+  auto data = qUncompress(raw);
+  ClientInstance->callLua("Observe", data);
 }
 
 Replayer *QmlBackend::getReplayer() const {
@@ -540,13 +611,13 @@ void QmlBackend::setReplayer(Replayer *rep) {
   replayer = rep;
   if (rep) {
     connect(rep, &Replayer::duration_set, this, [this](int sec) {
-        this->emitNotifyUI("ReplayerDurationSet", QString::number(sec));
+        this->notifyUI("ReplayerDurationSet", QString::number(sec));
         });
     connect(rep, &Replayer::elasped, this, [this](int sec) {
-        this->emitNotifyUI("ReplayerElapsedChange", QString::number(sec));
+        this->notifyUI("ReplayerElapsedChange", QString::number(sec));
         });
     connect(rep, &Replayer::speed_changed, this, [this](qreal speed) {
-        this->emitNotifyUI("ReplayerSpeedChange", QString::number(speed));
+        this->notifyUI("ReplayerSpeedChange", QString::number(speed));
         });
     connect(this, &QmlBackend::replayerToggle, rep, &Replayer::toggle);
     connect(this, &QmlBackend::replayerSlowDown, rep, &Replayer::slowDown);
@@ -568,6 +639,18 @@ void QmlBackend::controlReplayer(QString type) {
   } else if (type == "shutdown") {
     emit replayerShutdown();
   }
+}
+
+QJsonObject QmlBackend::getRequestData() const {
+  auto obj = QJsonObject();
+  auto router = ClientInstance->getRouter();
+  obj["id"] = router->getRequestId();
+  obj["timeout"] = router->getTimeout();
+  auto timestamp = router->getRequestTimestamp();
+  // 因为timestamp是服务器发来的时间，如果自己比服务器的时钟快的话，那么就得加上这个差值才行
+  timestamp += ClientInstance->getServerLag();
+  obj["timestamp"] = timestamp;
+  return obj;
 }
 
 #endif

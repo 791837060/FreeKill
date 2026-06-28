@@ -1,10 +1,10 @@
-#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "replayer.h"
-#include "client.h"
-#include "qmlbackend.h"
-#include "util.h"
+#include "client/replayer.h"
+#include "client/client.h"
+#include "client/clientplayer.h"
+#include "core/util.h"
+#include "core/c-wrapper.h"
 
 Replayer::Replayer(QObject *parent, const QString &filename) :
   QThread(parent), fileName(filename), roomSettings(""), origPlayerInfo(""),
@@ -21,23 +21,39 @@ Replayer::Replayer(QObject *parent, const QString &filename) :
   file.open(QIODevice::ReadOnly);
   QByteArray raw = file.readAll();
   file.close();
+  loadRawData(raw);
+}
 
+Replayer::Replayer(QObject *parent, int id) :
+  QThread(parent), fileName(""), roomSettings(""), origPlayerInfo(""),
+  playing(true), killed(false), speed(1.0), uniformRunning(false)
+{
+  setObjectName("Replayer");
+  auto result = ClientInstance->database().select(QString(
+    "SELECT hex(recording) as r FROM myGameRecordings WHERE id = %1;").arg(id));
+  auto raw = QByteArray::fromHex(result[0]["r"].toLatin1());
+  loadRawData(raw);
+}
+
+void Replayer::loadRawData(const QByteArray &raw) {
   auto data = qUncompress(raw);
 
-  auto doc = QJsonDocument::fromJson(data);
-  auto arr = doc.array();
-  if (arr.count() < 10) {
+  auto doc = QCborValue::fromCbor(data);
+  auto arr = doc.toArray();
+  if (arr.size() < 10) {
     return;
   }
 
-  auto ver = arr[0].toString();
+  auto ver = arr[0].toByteArray();
   if (ver != FK_VERSION) {
-    Backend->showToast("Warning: Mismatch version of replay detected, which may cause crashes.");
+    emit ClientInstance->toast_message(
+      "Warning: Mismatch version of replay detected, which may cause crashes.");
   }
 
-  roomSettings = arr[2].toString();
+  roomSettings = arr[2].toByteArray();
+  recordType = arr[5].toByteArray();
 
-  foreach (auto v, arr) {
+  for (auto v : arr) {
     if (!v.isArray()) {
       continue;
     }
@@ -46,27 +62,29 @@ Replayer::Replayer(QObject *parent, const QString &filename) :
     Pair *pair = new Pair;
     pair->elapsed = a[0].toInteger();
     pair->isRequest = a[1].toBool();
-    pair->cmd = a[2].toString();
-    pair->jsonData = a[3].toString();
+    pair->cmd = a[2].toByteArray();
+    pair->jsonData = a[3].toByteArray();
     pairs << pair;
   }
 
-  connect(this, &Replayer::command_parsed, ClientInstance, &Client::processReplay);
+  connect(this, &Replayer::command_parsed, this, [](const QByteArray &c, const QByteArray &j) {
+    ClientInstance->callLua(c, j);
+  });
 
-  auto playerInfoRaw = arr[3].toString();
-  auto playerInfo = QJsonDocument::fromJson(playerInfoRaw.toUtf8()).array();
-  if (playerInfo[0].toInt() != Self->getId()) {
-    origPlayerInfo = JsonArray2Bytes({ Self->getId(), Self->getScreenName(), Self->getAvatar() });
-    emit command_parsed("Setup", playerInfoRaw);
-  }
+  auto playerInfoRaw = arr[3].toByteArray();
+  auto playerInfo = QCborValue::fromCbor(playerInfoRaw).toArray();
+  auto self = ClientInstance->getSelf();
+  origPlayerInfo = QCborArray({
+    self->getId(), self->getScreenName(), self->getAvatar()
+  }).toCborValue().toCbor();
+  emit command_parsed("Setup", playerInfoRaw);
 }
 
 Replayer::~Replayer() {
   if (origPlayerInfo != "") {
     emit command_parsed("Setup", origPlayerInfo);
   }
-  Backend->setReplayer(nullptr);
-  foreach (auto e, pairs) {
+  for (auto e : pairs) {
     delete e;
   }
 }
@@ -131,18 +149,25 @@ void Replayer::run() {
   qint64 start = 0;
 
   if (roomSettings == "") {
-    Backend->showToast("Invalid replay file.");
+    emit ClientInstance->toast_message("Invalid replay file.");
     deleteLater();
     return;
   }
 
-  emit command_parsed("EnterRoom", roomSettings);
-  emit command_parsed("StartGame", "");
+  if (recordType == "normal") {
+    auto connType = qApp->thread() == QThread::currentThread()
+      ? Qt::DirectConnection : Qt::BlockingQueuedConnection;
+    QMetaObject::invokeMethod(qApp, [&]() {
+      emit command_parsed("EnterRoom", roomSettings);
+    }, connType);
+
+    emit command_parsed("StartGame", "\x40");
+  }
 
   emit speed_changed(getSpeed());
   emit duration_set(getDuration());
 
-  foreach (auto pair, pairs) {
+  for (auto pair : pairs) {
     if (killed) {
       break;
     }

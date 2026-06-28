@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <QString>
+#include <QStringList>
 #include <QtGlobal>
 
 namespace AnkiConnect {
@@ -18,6 +19,8 @@ struct WordPair {
 using AnkiEase = int;
 
 QString getAnkiDeckForUser(const QString &playerName);
+/** 按规则排序的牌组名列表（已按当年起始年级旋转） */
+QStringList deckOrderForUser(const QString &playerName);
 AnkiEase easeFromMistakes(int mistakeCount);
 QString easeLabelZh(AnkiEase ease);
 void resetMistakeCount();

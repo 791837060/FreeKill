@@ -1,10 +1,12 @@
 {
   "banwords": [],
   "description": "FreeKill Server",
-  "iconUrl": "https://img1.imgtp.com/2023/07/01/DGUdj8eu.png",
+  "iconUrl": "default",
   "capacity": 100,
   "tempBanTime": 20,
   "motd": "Welcome!",
   "hiddenPacks": [],
-  "enableBots": true
+  "enableBots": true,
+  "roomCountPerThread": 2000,
+  "maxPlayersPerDevice": 5
 }

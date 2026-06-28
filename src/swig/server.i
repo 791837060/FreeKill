@@ -1,8 +1,49 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+%nodefaultctor Task;
+%nodefaultdtor Task;
+class Task {
+public:
+  int getId() const;
+
+  QString getTaskType() const;
+  QByteArray getData() const;
+
+  void delay(int ms);
+  void saveGlobalState(const QString &key, const QString &jsonData);
+  QString getGlobalSaveState(const QString &key);
+
+  void decreaseRefCount();
+};
+
+%extend Task {
+  ServerPlayer *getPlayer() {
+    return ServerInstance->findPlayerByConnId($self->getUserConnId());
+  }
+}
+
+%nodefaultctor Server;
+%nodefaultdtor Server;
+class Server {
+};
+
+%extend Server {
+  Task *getTask(int id) {
+    return $self->task_manager().getTask(id);
+  }
+}
+
+%nodefaultctor RoomBase;
+%nodefaultdtor RoomBase;
+class RoomBase {
+public:
+  void saveGlobalState(const QString &key, const QString &jsonData);
+  QString getGlobalSaveState(const QString &key);
+};
+
 %nodefaultctor Room;
 %nodefaultdtor Room;
-class Room : public QObject {
+class Room : public RoomBase {
 public:
   // Property reader & setter
   // ==================================={
@@ -14,16 +55,30 @@ public:
   QList<ServerPlayer *> getObservers() const;
   bool hasObserver(ServerPlayer *player) const;
   int getTimeout() const;
-  QString getWordList() const;
-  void checkAbandoned();
+  void delay(int ms);
 
-  void updateWinRate(int id, const QString &general, const QString &mode,
-                     int result, bool dead);
+  void updatePlayerWinRate(int id, const QString &mode, const QString &role, int result);
+  void updateGeneralWinRate(const QString &general, const QString &mode, const QString &role, int result);
   void gameOver();
+  void setRequestTimer(int ms);
+  void destroyRequestTimer();
+
+  void increaseRefCount();
+  void decreaseRefCount();
+
+  int getSessionId() const;
+  QString getSessionData() const;
+  void setSessionData(const QString &json);
+
+  ServerPlayer *addNpc();
+  void removeNpc(ServerPlayer *);
+
+  QString getWordList() const;
+  void setWordList(const QString &wordList);
 };
 
 %extend Room {
-  QString settings() {
+  QByteArray settings() {
     return $self->getSettings();
   }
 }
@@ -34,45 +89,25 @@ class RoomThread : public QThread {
 public:
   Room *getRoom(int id);
 
-  QString fetchRequest();
-  void clearRequest();
-  bool hasRequest();
-
-  void trySleep(int ms);
-  bool isTerminated() const;
+  bool isOutdated();
 };
-
-%{
-void RoomThread::run()
-{
-  lua_getglobal(L, "debug");
-  lua_getfield(L, -1, "traceback");
-  lua_replace(L, -2);
-  lua_getglobal(L, "InitScheduler");
-  SWIG_NewPointerObj(L, this, SWIGTYPE_p_RoomThread, 0);
-  int error = lua_pcall(L, 1, 0, -2);
-  lua_pop(L, 1);
-  if (error) {
-    const char *error_msg = lua_tostring(L, -1);
-    qCritical() << error_msg;
-  }
-}
-%}
 
 %nodefaultctor ServerPlayer;
 %nodefaultdtor ServerPlayer;
 class ServerPlayer : public Player {
 public:
-  void doRequest(const QString &command,
-           const QString &json_data, int timeout);
-  QString waitForReply(int timeout);
-  void doNotify(const QString &command, const QString &json_data);
-
-  bool busy() const;
-  void setBusy(bool busy);
+  void doRequest(const QByteArray &command,
+           const QByteArray &json_data, int timeout, long long timestamp = -1);
+  QByteArray waitForReply(int timeout);
+  void doNotify(const QByteArray &command, const QByteArray &json_data);
 
   bool thinking();
   void setThinking(bool t);
+
+  void saveState(const QString &jsonData);
+  QString getSaveState();
+  void saveGlobalState(const QString &key, const QString &jsonData);
+  QString getGlobalSaveState(const QString &key);
 };
 
 %extend ServerPlayer {

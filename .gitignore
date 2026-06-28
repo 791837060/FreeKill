@@ -4,54 +4,49 @@
 /docs/.venv
 /*.o
 /zh_CN.qm
-/lang/zh_CN.qm
+/en_US.qm
+/vi_VN.qm
 /fk_ver
-
-# vendored headers / submodules (build only, not project source)
-/include/
+/fk_ver.bak
 
 # IDE & LSP
 /.kdev4/
 /.vscode/
-/.idea/
+/.qtcreator
 /*.user
-CMakeLists.txt.user
 *-swp
 /*.kdev4
 /.cache/
 /tags
-*.iml
+# /.luarc.json
+/.qmllint.ini
 
-# Release / package / archives (non-source)
-/FreeKill-release/
-
-/FreeKill/
-/*.zip
-*.bak
-
-# Local temp / notes
-/新建*.txt
-
-# file produced by game / runtime
+# file produced by game
+*.lock
+/FreeKill
 /FreeKill.exe
 /mymod
 /recording
 freekill-wrap.cxx
-/server/users.db
-/server/rsa
-/server/rsa_pub
+/server/*
+!/server/init.sql
+!/server/gamedb_init.sql
+/client/client.db
+/client/autosave_recording
 /freekill.client.config.json
 /freekill.server.config.json
 /freekill.server.error.log
 /freekill.server.info.log
+/freekill.server.log
 /flist.txt
+/server-list.json
+/resource_pak
+/FreeKill-release/
 
-# windeployqt output (project root or release dir)
+# windeployqt
 /bearer/
-/generic/
 /iconengines/
 /imageformats/
-/networkinformation/
 /platforms/
 /Qt/
 /QtGraphicalEffects/
@@ -61,12 +56,12 @@ freekill-wrap.cxx
 /QtQml/
 /QtMultimedia/
 /multimedia/
-/qml/
 /qmltooling/
 /sqldrivers/
 /styles/
 /tls/
 /translations/
+/FreeKill-release/
 /*.dll
 /D3Dcompiler_47.dll
 /opengl32sw.dll
@@ -74,7 +69,9 @@ freekill-wrap.cxx
 
 # local scripts (keep ul_build_win.bat tracked)
 /*.bat
+/.idea/
+/FreeKill.iml
 !/ul_build_win.bat
 
-# android local overrides
-/android/ul_build.sh
+# freekill-core 已纳入本仓库，勿再作为嵌套 git 仓库
+/packages/freekill-core/.git/

@@ -1,11 +1,7 @@
-#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef _QMLBACKEND_H
 #define _QMLBACKEND_H
-
-#include <openssl/rsa.h>
-#include <openssl/pem.h>
 
 class Replayer;
 
@@ -19,52 +15,54 @@ public:
 
   // File used by both Lua and Qml
   static Q_INVOKABLE void cd(const QString &path);
-  static Q_INVOKABLE QStringList ls(const QString &dir = "");
+  static Q_INVOKABLE QStringList ls(const QString &dir = QStringLiteral(""));
   static Q_INVOKABLE QString pwd();
   static Q_INVOKABLE bool exists(const QString &file);
   static Q_INVOKABLE bool isDir(const QString &file);
+
+  // only used in qml
+  static Q_INVOKABLE QJsonObject readJsonObjectFromFile(const QString &file);
 
 #ifndef FK_SERVER_ONLY
   QQmlApplicationEngine *getEngine() const;
   void setEngine(QQmlApplicationEngine *engine);
 
   Q_INVOKABLE void startServer(ushort port);
-  Q_INVOKABLE void joinServer(QString address);
+  Q_INVOKABLE void joinServer(QString address, ushort port = 9527);
 
   // Lobby
   Q_INVOKABLE void quitLobby(bool close = true);
 
-  // lua --> qml
-  void emitNotifyUI(const QString &command, const QString &jsonData);
-
   // read data from lua, call lua functions
   Q_INVOKABLE QString translate(const QString &src);
-  Q_INVOKABLE QString callLuaFunction(const QString &func_name,
+  Q_INVOKABLE QVariant callLuaFunction(const QString &func_name,
                                       QVariantList params);
+  Q_INVOKABLE QVariant evalLuaExp(const QString &lua);
 
-  Q_INVOKABLE QString pubEncrypt(const QString &key, const QString &data);
+  Q_INVOKABLE QString getPublicServerList();
   Q_INVOKABLE QString loadConf();
   Q_INVOKABLE QString loadTips();
-  Q_INVOKABLE QString getOneWord(const QString &ownerRoom, const QString &rightWord,
-                                 const QString &playerName = QString());
   Q_INVOKABLE void saveConf(const QString &conf);
 
-  Q_INVOKABLE void replyDelayTest(const QString &screenName, const QString &cipher);
-  //Q_INVOKABLE是一个Qt特有的宏，它用于标记类中的成员函数，使其能够在QML中被调用
+  Q_INVOKABLE QString getOneWord(const QString &ownerRoom, const QString &rightWord,
+                                 const QString &playerName = QString());
+
+  Q_INVOKABLE int getWordMistakeCount();
+  Q_INVOKABLE QString getWordAnkiEaseLabel();
+  Q_INVOKABLE void resetWordSession();
+
   Q_INVOKABLE void playSound(const QString &name, int index = 0);
   Q_INVOKABLE void playSoundWav(const QString &name, int index = 0);
 
   Q_INVOKABLE void copyToClipboard(const QString &s);
   Q_INVOKABLE QString readClipboard();
 
-  Q_INVOKABLE void setAESKey(const QString &key);
-  Q_INVOKABLE QString getAESKey() const;
-  Q_INVOKABLE void installAESKey();
-
-  Q_INVOKABLE void createModBackend();
-
   Q_INVOKABLE void detectServer();
-  Q_INVOKABLE void getServerInfo(const QString &addr);
+  Q_INVOKABLE void getServerInfo(const QString &addr, ushort port = 9527u);
+
+  Q_INVOKABLE void showDialog(const QString &type, const QString &text,
+      const QString &orig = QString());
+  Q_INVOKABLE void askFixResource();
 
   qreal volume() const { return m_volume; }
   void setVolume(qreal v) { m_volume = v; }
@@ -73,12 +71,18 @@ public:
 
   Q_INVOKABLE void removeRecord(const QString &);
   Q_INVOKABLE void playRecord(const QString &);
+  Q_INVOKABLE void playBlobRecord(int);
+  Q_INVOKABLE QString saveBlobRecordToFile(int);
+  Q_INVOKABLE void reviewGameOverScene(int);
   Replayer *getReplayer() const;
   void setReplayer(Replayer *rep);
   Q_INVOKABLE void controlReplayer(QString type);
 
+  Q_INVOKABLE QJsonObject getRequestData() const;
+
 signals:
-  void notifyUI(const QString &command, const QString &jsonData);
+  void notifyUI(const QString &command, const QVariant &data);
+  void dialog(const QString &type, const QString &text, const QString &orig = QString());
   void volumeChanged(qreal);
   void replayerToggle();
   void replayerSpeedUp();
@@ -95,13 +99,10 @@ private:
   QQmlApplicationEngine *engine;
 
   QUdpSocket *udpSocket;
-  RSA *rsa;
-  QString aes_key;
   qreal m_volume;
+  int maxConcurrentPlayback = 13;
 
   Replayer *replayer;
-
-  void pushLuaValue(lua_State *L, QVariant v);
 #endif
 };
 

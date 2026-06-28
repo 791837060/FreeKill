@@ -3,19 +3,21 @@
 %module fk
 
 %{
-#include "client.h"
-#include "server.h"
-#include "serverplayer.h"
-#include "clientplayer.h"
-#include "room.h"
-#include "roomthread.h"
-#include "qmlbackend.h"
-#include "util.h"
+#include "client/client.h"
+#include "server/server.h"
+#include "server/task/task.h"
+#include "server/task/task_manager.h"
+#include "server/user/serverplayer.h"
+#include "server/room/room.h"
+#include "server/gamelogic/roomthread.h"
+#include "ui/qmlbackend.h"
+#include "core/util.h"
 
 const char *FK_VER = FK_VERSION;
 %}
 
 %include "naturalvar.i"
+
 %include "qt.i"
 %include "player.i"
 %include "client.i"
@@ -23,3 +25,5 @@ const char *FK_VER = FK_VERSION;
 
 extern char *FK_VER;
 QString GetDisabledPacks();
+
+// QVariant AskOllama(const QString &apiEndpoint, const QVariant &body);

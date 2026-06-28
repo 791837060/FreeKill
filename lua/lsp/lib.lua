@@ -24,16 +24,21 @@ function Object:initialize(...) end
 ---@return T
 function Object:new(...)end
 
+---@generic T
+---@param self T
 ---@param name string
+---@return T
 function Object:subclass(name)end
 
 ---@param class class|Object
 ---@return boolean
 function Object:isInstanceOf(class) end
 
----@param class class
+---@param class class|Object
 ---@return boolean
 function Object:isSubclassOf(class) end
+
+function Object:include(e) end
 
 ---@class json
 json = {}
@@ -46,3 +51,5 @@ function json.encode(obj)end
 ---@param str string @ JSON string to decode
 ---@return any
 function json.decode(str)end
+
+cbor = {}

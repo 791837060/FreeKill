@@ -1,10 +1,9 @@
-#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef _CLIENTPLAYER_H
 #define _CLIENTPLAYER_H
 
-#include "player.h"
+#include "core/player.h"
 
 class ClientPlayer : public Player {
   Q_OBJECT
@@ -27,7 +26,5 @@ public:
 
 private:
 };
-
-extern ClientPlayer *Self;
 
 #endif // _CLIENTPLAYER_H

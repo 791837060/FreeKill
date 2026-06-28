@@ -23,6 +23,9 @@ public:
   QString getAvatar() const;
   void setAvatar(const QString &avatar);
 
+  int getTotalGameTime() const;
+  void addTotalGameTime(int toAdd);
+
   State getState() const;
   void setState(State state);
 
@@ -32,11 +35,3 @@ public:
   bool isDied() const;
   void setDied(bool died);
 };
-
-%nodefaultctor ClientPlayer;
-%nodefaultdtor ClientPlayer;
-class ClientPlayer : public Player {
-public:
-};
-
-extern ClientPlayer *Self;

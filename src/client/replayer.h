@@ -1,4 +1,3 @@
-#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #ifndef _REPLAYER_H
@@ -8,6 +7,7 @@ class Replayer : public QThread {
   Q_OBJECT
 
 public:
+  explicit Replayer(QObject *parent, int id);
   explicit Replayer(QObject *parent, const QString &filename);
   ~Replayer();
 
@@ -18,7 +18,7 @@ signals:
   void duration_set(int secs);
   void elasped(int secs);
   void speed_changed(qreal speed);
-  void command_parsed(const QString &cmd, const QString &j);
+  void command_parsed(const QByteArray &cmd, const QByteArray &j);
 
 public slots:
   void uniform();
@@ -36,18 +36,21 @@ private:
   bool playing;
   bool killed;
   bool uniformRunning;
-  QString roomSettings;
-  QString origPlayerInfo;
+  QByteArray roomSettings;
+  QByteArray origPlayerInfo;
+  QByteArray recordType = "normal";
   QMutex mutex;
   QSemaphore play_sem;
 
   struct Pair {
     qint64 elapsed;
     bool isRequest;
-    QString cmd;
-    QString jsonData;
+    QByteArray cmd;
+    QByteArray jsonData;
   };
   QList<Pair *> pairs;
+
+  void loadRawData(const QByteArray &raw);
 };
 
 #endif // _REPLAYER_H

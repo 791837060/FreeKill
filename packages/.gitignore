@@ -3,5 +3,11 @@
 !standard_cards/
 !test/
 !maneuvering/
+!freekill-core/
+!tenyear/
+!mobile/
+!utility/
+!mougong/
+!ol/
 !.gitignore
 !init.sql

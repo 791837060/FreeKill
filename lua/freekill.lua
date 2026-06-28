@@ -4,40 +4,47 @@
 -- 向Lua虚拟机中加载库、游戏中的类，以及加载Mod等等。
 
 -- 加载第三方库
-package.path = package.path .. ";./lua/lib/?.lua"
-                            .. ";./lua/?.lua"
+package.path = "./?.lua;./?/init.lua;./lua/lib/?.lua;./lua/?.lua;./lua/?/init.lua"
 
 -- middleclass: 轻量级的面向对象库
 class = require "middleclass"
 
--- json: 提供json处理支持，能解析JSON和生成JSON
+-- 老json只能待命了
 json = require "json"
+
+cbor = require "server.rpc.cbor"
 
 -- 初始化随机数种子
 math.randomseed(os.time())
 
 -- 加载实用类，让Lua编写起来更轻松。
-local Utils = require "core.util"
-TargetGroup, AimGroup, Util = table.unpack(Utils)
+Util = require "core.util"
 dofile "lua/core/debug.lua"
 
 -- 加载游戏核心类
-Engine = require "core.engine"
-Package = require "core.package"
-General = require "core.general"
-Card = require "core.card"
-Exppattern = require "core.exppattern"
-Skill = require "core.skill"
-UsableSkill = require "core.skill_type.usable_skill"
-StatusSkill = require "core.skill_type.status_skill"
-Player = require "core.player"
+Engine = require "lunarltk.core.engine"
+Package = require "lunarltk.core.package"
+General = require "lunarltk.core.general"
+CardSkeleton = require "lunarltk.core.card_skeleton"
+Card = require "lunarltk.core.card"
+Exppattern = require "lunarltk.core.exppattern"
+SkillSkeleton = require "lunarltk.core.skill_skeleton"
+Skill = require "lunarltk.core.skill"
+UsableSkill = require "lunarltk.core.skill_type.usable_skill"
+StatusSkill = require "lunarltk.core.skill_type.status_skill"
+Player = require "lunarltk.core.player"
 GameMode = require "core.game_mode"
+RequestHandler = require "core.request_handler"
+AbstractRoom = require "lunarltk.core.room.abstract_room"
 UI = require "ui-util"
+GameEvent = require "server.gameevent"
 
 -- 读取配置文件。
 -- 因为io马上就要被禁用了，所以赶紧先在这里读取配置文件。
 local function loadConf()
-  local cfg = io.open("freekill.client.config.json")
+  local new_core = FileIO.pwd():endsWith("packages/freekill-core")
+
+  local cfg = io.open((new_core and "../../" or "") .. "freekill.client.config.json")
   local ret
   if cfg == nil then
     ret = {
@@ -52,17 +59,18 @@ end
 Config = loadConf()
 
 -- 禁用各种危险的函数，尽可能让Lua执行安全的代码。
-local _os = {
+os = {
   time = os.time,
   date = os.date,
   clock = os.clock,
   difftime = os.difftime,
   getms = os.getms,
 }
-os = _os
-io = nil
+io = {
+  lines = io.lines
+}
 package = nil
-load = nil
+-- load = nil
 loadfile = nil
 local _dofile = dofile
 dofile = function(f)
@@ -75,4 +83,7 @@ end
 
 -- 初始化Engine类并置于Fk全局变量中，这里会加载拓展包
 dofile "lua/fk_ex.lua"
+
 Fk = Engine:new()
+dofile "lua/lunarltk/init.lua"
+Fk:load()

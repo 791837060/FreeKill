@@ -12,17 +12,16 @@
 #include <QUdpSocket>
 
 // other libraries
-typedef int LuaFunction;
-#include "lua.hpp"
-#include "sqlite3.h"
 #define OPENSSL_API_COMPAT 0x10101000L
 
-#if !defined (Q_OS_ANDROID) && !defined (Q_OS_WASM)
+#define QT_ENABLE_STRICT_MODE_UP_TO 0x060200
+
+#if !defined (Q_OS_ANDROID)
 #define DESKTOP_BUILD
 #endif
 
-#if defined(Q_OS_WASM)
-#define FK_CLIENT_ONLY
+#if defined (Q_OS_LINUX) && !defined (Q_OS_ANDROID)
+#define FK_USE_READLINE
 #endif
 
 // You may define FK_SERVER_ONLY with cmake .. -D...

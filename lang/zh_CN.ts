@@ -1,4 +1,4 @@
-<!DOCTYPE TS><TS>
+<!DOCTYPE TS><TS language="zh_CN">
 <context>
   <name>ClientSocket</name>
   <message>
@@ -82,6 +82,14 @@
 </context>
 
 <context>
+  <name>Client</name>
+  <message>
+    <source>$AutoSaveRecord</source>
+    <translation>录像与终局战况已自动保存</translation>
+  </message>
+</context>
+
+<context>
   <name>Server</name>
   <message>
     <source>%1 logged in</source>
@@ -106,6 +114,54 @@
   <message>
     <source>[%1/%2] upgrading package '%3'</source>
     <translation>[%1/%2] 更新拓展包 '%3'</translation>
+  </message>
+  <message>
+    <source>packages/%1: some error occured.</source>
+    <translation>拓展包 %1 出了点问题，可以尝试：进入“管理拓展包”，找到 %1，删除，然后再尝试</translation>
+  </message>
+</context>
+
+<context>
+  <name>QmlBackend</name>
+  <message>
+    <source>FreeKill</source>
+    <translation>新月杀</translation>
+  </message>
+  <message>
+    <source>help: others logged in again with this name</source>
+    <translation>提示：请检查密码是否泄漏</translation>
+  </message>
+  <message>
+    <source>help: unknown password error</source>
+    <translation>提示：请重启程序</translation>
+  </message>
+  <message>
+    <source>help: you have been banned!</source>
+    <translation>提示：此为永久封禁，请联系管理员说明</translation>
+  </message>
+  <message>
+    <source>help: you have been temporarily banned!</source>
+    <translation>提示：此为暂时封禁，一般在约二十分钟后自动解禁</translation>
+  </message>
+  <message>
+    <source>help: user name not in whitelist</source>
+    <translation>提示：请联系服主解决</translation>
+  </message>
+  <message>
+    <source>help: username or password error</source>
+    <translation>提示：可能该用户名已被占用，或者密码错误，如果你是初次注册的话考虑用另一个用户名密码进行登入</translation>
+  </message>
+  <message>
+    <source>help: md5 fail</source>
+    <translation>检测到MD5错误且未发生拓展包变动，若该情况多次发生请考虑点击主界面“资源修复”蓝色文字</translation>
+  </message>
+  <message>
+    <source>fix resource</source>
+    <translation>修复资源文件</translation>
+  </message>
+  <message>
+    <source>help: fix resource</source>
+    <translation>点击“确定”将立刻关闭游戏，下次启动时重新复制资源文件，适用于进入服务器多次提示MD5失败，是否继续？</translation>
   </message>
 </context>
 
@@ -144,6 +200,10 @@
     <translation>常见疑问</translation>
   </message>
   <message>
+    <source>ResFix</source>
+    <translation>资源修复</translation>
+  </message>
+  <message>
     <source>$LoginFAQ</source>
     <translation>
       登录过程中的常见问题：
@@ -176,6 +236,10 @@
     <translation>编辑服务器</translation>
   </message>
   <message>
+    <source>List of Favorites and Public Servers</source>
+    <translation>已收藏服务器与公共服务器列表</translation>
+  </message>
+  <message>
     <source>Refresh List</source>
     <translation>刷新列表</translation>
   </message>
@@ -187,10 +251,22 @@
     <source>Go Back</source>
     <translation>返回</translation>
   </message>
+  <message>
+    <source>Server Address</source>
+    <translation>服务器地址</translation>
+  </message>
+  <message>
+    <source>Port</source>
+    <translation>端口</translation>
+  </message>
 
   <message>
     <source>@VersionMismatch</source>
-    <translation>&lt;font color="red" size="4">&lt;b>版本不同：服务器为v%1&lt;/b>&lt;/font></translation>
+    <translation>&lt;font color="red" size="4">&lt;b>!! v%1&lt;/b>&lt;/font></translation>
+  </message>
+  <message>
+    <source>@VersionMatch</source>
+    <translation>&lt;font color="green" size="4">&lt;b>✓ v%1&lt;/b>&lt;/font></translation>
   </message>
   <message>
     <source>Server not up</source>
@@ -233,6 +309,14 @@
   <message>
     <source>Delete Server</source>
     <translation>删除服务器</translation>
+  </message>
+  <message>
+    <source>LOGIN (Auto-registration)</source>
+    <translation>登录（首次登录自动注册）</translation>
+  </message>
+  <message>
+    <source>Remove from Favorites</source>
+    <translation>从收藏夹删除</translation>
   </message>
 </context>
 
@@ -283,16 +367,32 @@
     <translation>MD5检测失败！请与服务端保持一致后再登入</translation>
   </message>
   <message>
+    <source>md5 fail</source>
+    <translation>资源文件错误</translation>
+  </message>
+  <message>
     <source>others logged in with this name</source>
     <translation>已经有人用这个名字登入了</translation>
   </message>
   <message>
     <source>others logged in again with this name</source>
-    <translation>其他人用你的用户名和密码登陆到了服务器，请检查密码是否泄漏</translation>
+    <translation>其他人用你的用户名和密码登陆到了服务器</translation>
+  </message>
+  <message>
+    <source>unknown password error</source>
+    <translation>未知登录错误</translation>
+  </message>
+  <message>
+    <source>user name not in whitelist</source>
+    <translation>你不在该服务器的白名单中！</translation>
   </message>
   <message>
     <source>invalid user name</source>
     <translation>用户名不合法，只能含有英数字和汉字</translation>
+  </message>
+  <message>
+    <source>cannot register more new users on this device</source>
+    <translation>已达到同一设备创建账号的数量限制</translation>
   </message>
   <message>
     <source>username or password error</source>
@@ -311,8 +411,16 @@
     <translation>服务端使用的是版本%1，该更新你的客户端了</translation>
   </message>
   <message>
+    <source>server supports version %1, please update</source>
+    <translation>服务端支持版本%1，请使用合适的版本连接</translation>
+  </message>
+  <message>
     <source>room password error</source>
     <translation>房间密码错误</translation>
+  </message>
+  <message>
+    <source>room is outdated</source>
+    <translation>房间已过时</translation>
   </message>
   <message>
     <source>no such room</source>
@@ -323,8 +431,8 @@
     <translation>你已经被该服务器封禁！</translation>
   </message>
   <message>
-    <source>you have been temporarily banned!</source>
-    <translation>由于逃跑或者其他不正当行为，你已经被暂时封禁！</translation>
+    <source>you have been banned! expire at %1</source>
+    <translation>你已经被封禁！&lt;br>&lt;br>封禁到期时间：&lt;b>%1&lt;/b></translation>
   </message>
   <message>
     <source>Can only observe running room.</source>
@@ -333,6 +441,10 @@
   <message>
     <source>Room is full or already started!</source>
     <translation>房间已满！</translation>
+  </message>
+  <message>
+    <source>rejected your demand of joining room</source>
+    <translation>房主拒绝你加入。</translation>
   </message>
   <message>
     <source>server is full!</source>
@@ -477,8 +589,7 @@
     <source>tutor_msg_3</source>
     <translation>新月杀本身默认只含标准包！&lt;br>
         想要体验更多武将，就要通过联机获取！&lt;br>
-    在主界面点击“加入服务器” -> 添加服务器。&lt;br>
-        （目前推荐的服务器IP是175.178.66.93）</translation>
+    在主界面点击“加入服务器” -> 进入公共服务器或添加新服务器。</translation>
   </message>
   <message>
     <source>tutor_msg_4</source>
@@ -489,8 +600,8 @@
   </message>
   <message>
     <source>tutor_msg_5</source>
-    <translation>更多指引可以去查阅下载链接附送的pdf。
-        这些pdf都是由开发者们编写的，不仅能让你快速掌握游戏的深入玩法，
+    <translation>更多指引可以去查阅新月之书：&lt;a href="https://fkbook-all-in-one.readthedocs.io">https://fkbook-all-in-one.readthedocs.io&lt;/a>&lt;br>。
+        这些文档都是由开发者们编写的，不仅能让你快速掌握游戏的深入玩法，
     还可以告诉你关于开设私服、制作拓展之类的知识。</translation>
   </message>
   <message>

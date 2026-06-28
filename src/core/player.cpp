@@ -1,10 +1,9 @@
-#include "pch.h"
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "player.h"
+#include "core/player.h"
 
 Player::Player(QObject *parent)
-    : QObject(parent), id(0), state(Player::Invalid), ready(false),
+    : QObject(parent), id(0), state(Player::Invalid), totalGameTime(0), ready(false),
     totalGames(0), winCount(0), runCount(0) {}
 
 Player::~Player() {}
@@ -25,6 +24,12 @@ QString Player::getAvatar() const { return avatar; }
 void Player::setAvatar(const QString &avatar) {
   this->avatar = avatar;
   emit avatarChanged();
+}
+
+int Player::getTotalGameTime() const { return totalGameTime; }
+
+void Player::addTotalGameTime(int toAdd) {
+  totalGameTime += toAdd;
 }
 
 Player::State Player::getState() const { return state; }

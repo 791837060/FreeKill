@@ -13,7 +13,7 @@ jobs:
     steps:
 
     - name: Checkout Git Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         submodules: true
 
@@ -23,15 +23,16 @@ jobs:
         args: install swig -y
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         aqtversion: '==3.1.*'
         py7zrversion: '>=0.20.2'
-        version: '6.4.2'
+        version: '6.10.0'
         host: 'windows'
         target: 'desktop'
         arch: 'win64_mingw'
         modules: 'qtmultimedia qt5compat qtshadertools'
+        tools: 'tools_opensslv3_x64 tools_mingw1310'
 
     - name: Disable PCH
       shell: bash
@@ -40,22 +41,28 @@ jobs:
         find -name "*.cpp" -exec sed -i '1i #include "pch.h"' "{}" \;
         find -name "*.h" -exec sed -i '1i #include "pch.h"' "{}" \;
         sed -i '1d' pch.h
+        sed -i '1d' main.cpp
         sed -i '/pch.h/d' CMakeLists.txt
+
+    # - name: Setup Debug Session
+    #  uses: owenthereal/action-upterm@v1
 
     - name: Configure CMake Project
       working-directory: ${{github.workspace}}
       env:
-        CMAKE_PREFIX_PATH: ${{ env.QT_ROOT_DIR }}
+        CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        CC: ${{env.Qt6_Dir}}/../../Tools/mingw1310_64/bin/gcc.exe
+        CXX: ${{env.Qt6_Dir}}/../../Tools/mingw1310_64/bin/g++.exe
+        RC: ${{env.Qt6_Dir}}/../../Tools/mingw1310_64/bin/windres.exe
+        OPENSSL_ROOT_DIR: ${{env.Qt6_Dir}}/../../Tools/OpenSSLv3/Win_x64
+        OPENSSL_INCLUDE_DIR: ${{env.OPENSSL_ROOT_DIR}}/include
+        OPENSSL_CRYPTO_LIBRARY: ${{env.OPENSSL_ROOT_DIR}}/bin/libcrypto-3-x64.dll
       run: |
         cmake -DCMAKE_BUILD_TYPE=MinSizeRel -G "MinGW Makefiles" -B ${{github.workspace}}/build
 
     - name: Build project
       working-directory: ${{github.workspace}}/build
-      run: mingw32-make -j2
-
-   # - name: Setup tmate session
-   #   uses: mxschmitt/action-tmate@v3
-   #   timeout-minutes: 15
+      run: mingw32-make -j4
 
     - name: Compress portable program
       working-directory: ${{github.workspace}}
@@ -65,15 +72,28 @@ jobs:
         cp build/FreeKill.exe FreeKill-release
         cp -r Fk FreeKill-release
         cd FreeKill-release
-        windeployqt FreeKill.exe
+        rm -rf qml plugins
+        windeployqt --no-translations FreeKill.exe
         cp -r ../.git .
         git restore .
+        if [ -d ../packages/freekill-core ]; then
+          mkdir -p packages/freekill-core
+          cp -r ../packages/freekill-core/. packages/freekill-core/
+          rm -rf packages/freekill-core/.git
+        fi
         rm -rf .git* android doc lib lang translations src
+        curl https://raw.githubusercontent.com/Qsgs-Fans/freekill-server-list/master/server-list.json > server-list.json
         cd ..
         cp lib/win/* FreeKill-release
         cp build/zh_CN.qm FreeKill-release
-        cp ../Qt/6.4.2/mingw_64/bin/li*.dll FreeKill-release
-        cp '/c/Program Files/OpenSSL/bin/libcrypto-1_1-x64.dll' FreeKill-release
+        cp build/en_US.qm FreeKill-release
+        cp fk_ver FreeKill-release
+        if [ -d audio/word ]; then
+          mkdir -p FreeKill-release/audio/word
+          cp -r audio/word/. FreeKill-release/audio/word/
+        fi
+        cp ../Qt/6.10.0/mingw_64/bin/li*.dll FreeKill-release
+        cp ../Qt/Tools/OpenSSLv3/Win_x64/bin/*.dll FreeKill-release
         7z a -t7z FreeKill-release.7z FreeKill-release -r -mx=9 -m0=LZMA2 -ms=10m -mf=on -mhc=on -mmt=on
 
     - name: Upload Release
@@ -88,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Git Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
