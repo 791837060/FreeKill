@@ -596,10 +596,17 @@ bool answerDueCard(AnkiEase ease, int mistakeCount) {
   bool ok = false;
   QString rawResult = "null";
   if (result.has_value()) {
-    rawResult = QString::fromUtf8(
-        QJsonDocument(result.value()).toJson(QJsonDocument::Compact));
-    if (result->isArray() && !result->toArray().isEmpty())
-      ok = result->toArray().first().toBool();
+    const auto &value = result.value();
+    if (value.isArray())
+      rawResult = QString::fromUtf8(
+          QJsonDocument(value.toArray()).toJson(QJsonDocument::Compact));
+    else if (value.isObject())
+      rawResult = QString::fromUtf8(
+          QJsonDocument(value.toObject()).toJson(QJsonDocument::Compact));
+    else
+      rawResult = value.toVariant().toString();
+    if (value.isArray() && !value.toArray().isEmpty())
+      ok = value.toArray().first().toBool();
   }
 
   const auto afterStats = fetchCardStats(cardId);
