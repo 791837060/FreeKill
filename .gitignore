@@ -42,6 +42,8 @@ freekill-wrap.cxx
 /server-list.json
 /resource_pak
 /FreeKill-release/
+/FreeKill-release2/
+/FreeKill-release3/
 
 # windeployqt
 /bearer/
@@ -62,6 +64,8 @@ freekill-wrap.cxx
 /tls/
 /translations/
 /FreeKill-release/
+/FreeKill-release2/
+/FreeKill-release3/
 /*.dll
 /D3Dcompiler_47.dll
 /opengl32sw.dll
