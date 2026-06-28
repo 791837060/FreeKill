@@ -313,6 +313,7 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
     return std::nullopt;
 
   const auto card = cards.first().toObject();
+  const QString deckName = card.value("deckName").toString();
   const auto noteId = jsonToCardId(card.value("note"));
   if (noteId <= 0)
     return std::nullopt;
@@ -331,6 +332,13 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
   const auto pair = mapFieldsToWordPair(fields);
   if (!pair.has_value())
     return std::nullopt;
+
+  const QString meaning =
+      stripHtml(getField(fields, {"Meaning", "Front", "meaning", "front", "D", "d", "释义"}));
+  logInfo(QString("选中单词 cardId=%1  牌组=%2  释义=%3")
+              .arg(cardId)
+              .arg(deckName.isEmpty() ? "-" : deckName)
+              .arg(meaning.isEmpty() ? "-" : meaning));
 
   g_activeCardId = cardId;
   g_mistakeCount = 0;
