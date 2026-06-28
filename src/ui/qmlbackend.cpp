@@ -318,7 +318,16 @@ QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
     return {};
   }
 
-  return wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
+  const QString result =
+      wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
+  const int sep = result.indexOf(QStringLiteral("_=front_xxxxxxxxxx_back=_"));
+  qInfo().noquote().nospace()
+      << QString("[Anki] getOneWord player=%1 len=%2 sep=%3 deck=%4")
+             .arg(deckPlayer)
+             .arg(result.size())
+             .arg(sep)
+             .arg(AnkiConnect::lastPickDeck());
+  return result;
 }
 
 int QmlBackend::getWordMistakeCount() {
@@ -332,6 +341,18 @@ QString QmlBackend::getWordAnkiEaseLabel() {
 
 void QmlBackend::resetWordSession() {
   AnkiConnect::clearActiveCard();
+}
+
+QString QmlBackend::getWordAnkiPickDeck() {
+  return AnkiConnect::lastPickDeck();
+}
+
+QString QmlBackend::getWordAnkiPickMeaning() {
+  return AnkiConnect::lastPickMeaning();
+}
+
+QString QmlBackend::getWordAnkiPickWord() {
+  return AnkiConnect::lastPickWord();
 }
 
 void QmlBackend::playSound(const QString &name, int index) {

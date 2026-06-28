@@ -51,6 +51,10 @@ public:
   Q_INVOKABLE QString getWordAnkiEaseLabel();
   Q_INVOKABLE void resetWordSession();
 
+  Q_INVOKABLE QString getWordAnkiPickDeck();
+  Q_INVOKABLE QString getWordAnkiPickMeaning();
+  Q_INVOKABLE QString getWordAnkiPickWord();
+
   Q_INVOKABLE void playSound(const QString &name, int index = 0);
   Q_INVOKABLE void playSoundWav(const QString &name, int index = 0);
 

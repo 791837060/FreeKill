@@ -29,26 +29,41 @@ qint64 g_activeCardId = -1;
 int g_mistakeCount = 0;
 QString g_nextPool = "due";
 QString g_ankiBaseUrl;
+QString g_lastPickDeck;
+QString g_lastPickMeaning;
+QString g_lastPickWord;
 QNetworkAccessManager *g_network = nullptr;
+
+void logLine(QtMsgType type, const QString &line) {
+  if (type == QtWarningMsg)
+    qWarning().noquote().nospace() << line;
+  else
+    qInfo().noquote().nospace() << line;
+}
+
+void logInfo(const QString &message, const QString &detail = {}) {
+  const QString line = detail.isEmpty()
+      ? QString("%1 %2").arg(LOG_PREFIX, message)
+      : QString("%1 %2 | %3").arg(LOG_PREFIX, message, detail);
+  logLine(QtInfoMsg, line);
+}
+
+void logWarn(const QString &message, const QString &detail = {}) {
+  const QString line = detail.isEmpty()
+      ? QString("%1 %2").arg(LOG_PREFIX, message)
+      : QString("%1 %2 | %3").arg(LOG_PREFIX, message, detail);
+  logLine(QtWarningMsg, line);
+}
+
+bool isQuietAnkiAction(const QString &action) {
+  return action == "findCards" || action == "findNotes" || action == "cardsInfo"
+      || action == "notesInfo";
+}
 
 QNetworkAccessManager *networkManager() {
   if (!g_network)
     g_network = new QNetworkAccessManager();
   return g_network;
-}
-
-void logInfo(const QString &message, const QVariant &detail = {}) {
-  if (detail.isValid())
-    qInfo() << LOG_PREFIX << message << detail;
-  else
-    qInfo() << LOG_PREFIX << message;
-}
-
-void logWarn(const QString &message, const QVariant &detail = {}) {
-  if (detail.isValid())
-    qWarning() << LOG_PREFIX << message << detail;
-  else
-    qWarning() << LOG_PREFIX << message;
 }
 
 qint64 jsonToCardId(const QJsonValue &value) {
@@ -125,10 +140,13 @@ std::optional<QJsonValue> queryAnki(const QString &action,
     return std::nullopt;
   }
 
-  if (!params.isEmpty() && action != "findCards" && action != "findNotes")
-    logInfo(QString("→ %1 %2").arg(action, g_ankiBaseUrl), params.toVariantMap());
-  else
-    logInfo(QString("→ %1 %2").arg(action, g_ankiBaseUrl));
+  if (!isQuietAnkiAction(action)) {
+    if (!params.isEmpty())
+      logInfo(QString("-> %1 %2").arg(action, g_ankiBaseUrl),
+              QString::fromUtf8(QJsonDocument(params).toJson(QJsonDocument::Compact)));
+    else
+      logInfo(QString("-> %1 %2").arg(action, g_ankiBaseUrl));
+  }
 
   QUrl url(g_ankiBaseUrl);
   QNetworkRequest request(url);
@@ -175,7 +193,13 @@ std::optional<QJsonValue> queryAnki(const QString &action,
   }
 
   const auto result = obj.value("result");
-  logInfo(QString("✓ %1").arg(action), summarizeAnkiResult(action, result));
+  if (!isQuietAnkiAction(action)) {
+    const auto summary = summarizeAnkiResult(action, result);
+    if (summary.isEmpty())
+      logInfo(QString("<- %1 ok").arg(action));
+    else
+      logInfo(QString("<- %1").arg(action), summary);
+  }
   return result;
 }
 
@@ -258,8 +282,8 @@ QStringList findCardIdsByQueries(const QStringList &queries,
     cardIds.reserve(ids.size());
     for (const auto &id : ids)
       cardIds << QString::number(jsonToCardId(id));
-    logInfo(QString("findCards(%1) [%2]").arg(query, label),
-            QString("共 %1 张").arg(cardIds.size()));
+    logInfo(QString("findCards [%1]").arg(label),
+            QString("query=%1 count=%2").arg(query).arg(cardIds.size()));
     return cardIds;
   }
 
@@ -298,14 +322,21 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId,
     return std::nullopt;
 
   const auto fields = notes.first().toObject().value("fields").toObject();
+  const QString rawMeaning =
+      stripHtml(getField(fields, {"Meaning", "Front", "meaning", "front", "D", "d", "释义"}));
   const auto pair = mapFieldsToWordPair(fields, seriesTag);
   if (!pair.has_value())
     return std::nullopt;
 
-  logInfo(QString("取词成功 牌组=%1 cardId=%2")
+  logInfo(QString("取词成功 deck=%1 cardId=%2 word=%3")
               .arg(deckName.isEmpty() ? "-" : deckName)
-              .arg(cardId),
-          pair->front.isEmpty() ? "-" : pair->front);
+              .arg(cardId)
+              .arg(pair->back),
+          QString("meaning=%1").arg(rawMeaning.isEmpty() ? "-" : rawMeaning));
+
+  g_lastPickDeck = deckName;
+  g_lastPickMeaning = rawMeaning;
+  g_lastPickWord = pair->back;
 
   g_activeCardId = cardId;
   g_mistakeCount = 0;
@@ -429,7 +460,7 @@ void clearActiveCard() {
 void setAnkiRoom(const QString &roomName) {
   const QString host = ankiHostFromRoomName(roomName);
   g_ankiBaseUrl = QString("http://%1:%2").arg(host).arg(ANKI_PORT);
-  logInfo(QString("AnkiConnect 房间 %1 → %2").arg(roomName, g_ankiBaseUrl));
+  logInfo(QString("AnkiConnect room=%1 url=%2").arg(roomName, g_ankiBaseUrl));
 }
 
 QString ankiRoomUrl() { return g_ankiBaseUrl; }
@@ -511,6 +542,12 @@ bool answerDueCard(AnkiEase ease, int mistakeCount) {
 }
 
 qint64 activeCardId() { return g_activeCardId; }
+
+QString lastPickDeck() { return g_lastPickDeck; }
+
+QString lastPickMeaning() { return g_lastPickMeaning; }
+
+QString lastPickWord() { return g_lastPickWord; }
 
 } // namespace AnkiConnect
 

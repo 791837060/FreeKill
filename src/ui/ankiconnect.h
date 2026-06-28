@@ -36,6 +36,9 @@ std::optional<WordPair> getNextDueCard(qint64 skipCardId = -1,
                                        const QString &playerName = QString());
 bool answerDueCard(AnkiEase ease, int mistakeCount = -1);
 qint64 activeCardId();
+QString lastPickDeck();
+QString lastPickMeaning();
+QString lastPickWord();
 
 } // namespace AnkiConnect
 
