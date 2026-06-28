@@ -32,13 +32,14 @@ QString g_ankiBaseUrl;
 QString g_lastPickDeck;
 QString g_lastPickMeaning;
 QString g_lastPickWord;
+QString g_lastQueryDeck;
 QNetworkAccessManager *g_network = nullptr;
 
 void logLine(QtMsgType type, const QString &line) {
   if (type == QtWarningMsg)
-    qWarning().noquote().nospace() << line;
+    qWarning("%ls", qUtf16Printable(line));
   else
-    qInfo().noquote().nospace() << line;
+    qInfo("%ls", qUtf16Printable(line));
 }
 
 void logInfo(const QString &message, const QString &detail = {}) {
@@ -74,6 +75,49 @@ qint64 jsonToCardId(const QJsonValue &value) {
 
 QJsonValue cardIdToJson(qint64 cardId) {
   return QJsonValue(static_cast<double>(cardId));
+}
+
+struct CardStats {
+  QString deckName;
+  int reps = -1;
+  int lapses = -1;
+};
+
+QString deckFromCard(const QJsonObject &card) {
+  QString deck = card.value("deckName").toString();
+  if (deck.isEmpty())
+    deck = card.value("deck").toString();
+  return deck;
+}
+
+CardStats cardStatsFromJson(const QJsonObject &card) {
+  CardStats stats;
+  stats.deckName = deckFromCard(card);
+  if (card.contains("reps"))
+    stats.reps = card.value("reps").toInt(-1);
+  if (card.contains("lapses"))
+    stats.lapses = card.value("lapses").toInt(-1);
+  return stats;
+}
+
+std::optional<QJsonValue> queryAnki(const QString &action,
+                                    const QJsonObject &params = {});
+
+std::optional<CardStats> fetchCardStats(qint64 cardId) {
+  if (cardId <= 0)
+    return std::nullopt;
+
+  QJsonArray cardsParam;
+  cardsParam.append(cardIdToJson(cardId));
+  const auto cardsResult = queryAnki("cardsInfo", {{"cards", cardsParam}});
+  if (!cardsResult.has_value() || !cardsResult->isArray())
+    return std::nullopt;
+
+  const auto cards = cardsResult->toArray();
+  if (cards.isEmpty() || !cards.first().isObject())
+    return std::nullopt;
+
+  return cardStatsFromJson(cards.first().toObject());
 }
 
 QStringList withDeckFilter(const QStringList &queries, const QString &deck) {
@@ -113,10 +157,13 @@ QString summarizeAnkiResult(const QString &action, const QJsonValue &result) {
     }
     if (action == "cardsInfo" && !arr.isEmpty() && arr.first().isObject()) {
       const auto card = arr.first().toObject();
-      return QString("cardId=%1 note=%2 deck=%3")
+      const auto stats = cardStatsFromJson(card);
+      return QString("cardId=%1 note=%2 deck=%3 reps=%4 lapses=%5")
           .arg(jsonToCardId(card.value("cardId")))
           .arg(jsonToCardId(card.value("note")))
-          .arg(card.value("deckName").toString());
+          .arg(stats.deckName.isEmpty() ? "-" : stats.deckName)
+          .arg(stats.reps)
+          .arg(stats.lapses);
     }
     if (action == "notesInfo" && !arr.isEmpty() && arr.first().isObject()) {
       const auto note = arr.first().toObject();
@@ -134,7 +181,7 @@ QString summarizeAnkiResult(const QString &action, const QJsonValue &result) {
 }
 
 std::optional<QJsonValue> queryAnki(const QString &action,
-                                    const QJsonObject &params = {}) {
+                                    const QJsonObject &params) {
   if (g_ankiBaseUrl.isEmpty()) {
     logWarn("AnkiConnect 地址未设置，请先传入房间名");
     return std::nullopt;
@@ -306,7 +353,10 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId,
     return std::nullopt;
 
   const auto card = cards.first().toObject();
-  const QString deckName = card.value("deckName").toString();
+  const auto stats = cardStatsFromJson(card);
+  QString deckName = stats.deckName;
+  if (deckName.isEmpty())
+    deckName = g_lastQueryDeck;
   const auto noteId = jsonToCardId(card.value("note"));
   if (noteId <= 0)
     return std::nullopt;
@@ -328,10 +378,12 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId,
   if (!pair.has_value())
     return std::nullopt;
 
-  logInfo(QString("取词成功 deck=%1 cardId=%2 word=%3")
+  logInfo(QString("取词成功 deck=%1 cardId=%2 word=%3 reps=%4 lapses=%5")
               .arg(deckName.isEmpty() ? "-" : deckName)
               .arg(cardId)
-              .arg(pair->back),
+              .arg(pair->back)
+              .arg(stats.reps)
+              .arg(stats.lapses),
           QString("meaning=%1").arg(rawMeaning.isEmpty() ? "-" : rawMeaning));
 
   g_lastPickDeck = deckName;
@@ -459,7 +511,10 @@ void clearActiveCard() {
 
 void setAnkiRoom(const QString &roomName) {
   const QString host = ankiHostFromRoomName(roomName);
-  g_ankiBaseUrl = QString("http://%1:%2").arg(host).arg(ANKI_PORT);
+  const QString url = QString("http://%1:%2").arg(host).arg(ANKI_PORT);
+  if (url == g_ankiBaseUrl)
+    return;
+  g_ankiBaseUrl = url;
   logInfo(QString("AnkiConnect room=%1 url=%2").arg(roomName, g_ankiBaseUrl));
 }
 
@@ -505,6 +560,7 @@ std::optional<WordPair> getNextDueCard(qint64 skipCardId, const QString &playerN
         if (cardIdStrings.isEmpty())
           continue;
 
+        g_lastQueryDeck = deck;
         for (const auto &idString : cardIdStrings) {
           const auto id = idString.toLongLong();
           if (skipCardId >= 0 && id == skipCardId)
@@ -528,13 +584,41 @@ bool answerDueCard(AnkiEase ease, int mistakeCount) {
     return false;
 
   const qint64 cardId = g_activeCardId;
+  const auto beforeStats = fetchCardStats(cardId);
+  const QString deckName = beforeStats.has_value() && !beforeStats->deckName.isEmpty()
+      ? beforeStats->deckName
+      : g_lastQueryDeck;
+
   QJsonObject answer{{"cardId", cardIdToJson(cardId)}, {"ease", ease}};
   const auto result =
       queryAnki("answerCards", {{"answers", QJsonArray{answer}}});
 
   bool ok = false;
-  if (result.has_value() && result->isArray() && !result->toArray().isEmpty())
-    ok = result->toArray().first().toBool();
+  QString rawResult = "null";
+  if (result.has_value()) {
+    rawResult = QString::fromUtf8(
+        QJsonDocument(result.value()).toJson(QJsonDocument::Compact));
+    if (result->isArray() && !result->toArray().isEmpty())
+      ok = result->toArray().first().toBool();
+  }
+
+  const auto afterStats = fetchCardStats(cardId);
+  const int repsBefore = beforeStats.has_value() ? beforeStats->reps : -1;
+  const int lapsesBefore = beforeStats.has_value() ? beforeStats->lapses : -1;
+  const int repsAfter = afterStats.has_value() ? afterStats->reps : -1;
+  const int lapsesAfter = afterStats.has_value() ? afterStats->lapses : -1;
+
+  logInfo(QString("answerCards cardId=%1 ease=%2 ok=%3 deck=%4")
+              .arg(cardId)
+              .arg(ease)
+              .arg(ok ? "true" : "false")
+              .arg(deckName.isEmpty() ? "-" : deckName),
+          QString("result=%1 reps=%2->%3 lapses=%4->%5")
+              .arg(rawResult)
+              .arg(repsBefore)
+              .arg(repsAfter)
+              .arg(lapsesBefore)
+              .arg(lapsesAfter));
 
   if (ok)
     g_activeCardId = -1;

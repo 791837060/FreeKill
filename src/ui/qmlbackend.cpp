@@ -321,12 +321,12 @@ QString QmlBackend::getOneWord(const QString &spring_ip_or_room_name,
   const QString result =
       wordPair->front + "_=front_xxxxxxxxxx_back=_" + wordPair->back;
   const int sep = result.indexOf(QStringLiteral("_=front_xxxxxxxxxx_back=_"));
-  qInfo().noquote().nospace()
-      << QString("[Anki] getOneWord player=%1 len=%2 sep=%3 deck=%4")
-             .arg(deckPlayer)
-             .arg(result.size())
-             .arg(sep)
-             .arg(AnkiConnect::lastPickDeck());
+  qInfo("%ls", qUtf16Printable(
+      QString("[Anki] getOneWord player=%1 len=%2 sep=%3 deck=%4")
+          .arg(deckPlayer)
+          .arg(result.size())
+          .arg(sep)
+          .arg(AnkiConnect::lastPickDeck())));
   return result;
 }
 
