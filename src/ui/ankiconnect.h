@@ -21,6 +21,8 @@ using AnkiEase = int;
 QString getAnkiDeckForUser(const QString &playerName);
 /** 按规则排序的牌组名列表（已按当年起始年级旋转） */
 QStringList deckOrderForUser(const QString &playerName);
+/** 释义字段须包含此标记字才视为该用户的单词（橙 / 佳） */
+QString seriesTagForUser(const QString &playerName);
 AnkiEase easeFromMistakes(int mistakeCount);
 QString easeLabelZh(AnkiEase ease);
 void resetMistakeCount();

@@ -68,32 +68,31 @@ jobs:
       working-directory: ${{github.workspace}}
       shell: bash
       run: |
-        mkdir FreeKill-release
-        cp build/FreeKill.exe FreeKill-release
-        cp -r Fk FreeKill-release
-        cd FreeKill-release
-        rm -rf qml plugins
-        windeployqt --no-translations FreeKill.exe
-        cp -r ../.git .
-        git restore .
-        if [ -d ../packages/freekill-core ]; then
-          mkdir -p packages/freekill-core
-          cp -r ../packages/freekill-core/. packages/freekill-core/
-          rm -rf packages/freekill-core/.git
+        mkdir -p FreeKill-release
+        git checkout-index -a -f --prefix=FreeKill-release/
+        cp build/FreeKill.exe FreeKill-release/
+        cp -r Fk FreeKill-release/
+        if [ -d packages/freekill-core ]; then
+          mkdir -p FreeKill-release/packages/freekill-core
+          cp -r packages/freekill-core/. FreeKill-release/packages/freekill-core/
+          rm -rf FreeKill-release/packages/freekill-core/.git
         fi
-        rm -rf .git* android doc lib lang translations src
+        cd FreeKill-release
+        rm -rf qml plugins .git .github android doc lib lang translations src
+        rm -f .git*
+        windeployqt --no-translations FreeKill.exe
         curl https://raw.githubusercontent.com/Qsgs-Fans/freekill-server-list/master/server-list.json > server-list.json
         cd ..
-        cp lib/win/* FreeKill-release
-        cp build/zh_CN.qm FreeKill-release
-        cp build/en_US.qm FreeKill-release
-        cp fk_ver FreeKill-release
+        cp lib/win/* FreeKill-release/
+        cp build/zh_CN.qm FreeKill-release/
+        cp build/en_US.qm FreeKill-release/
+        cp fk_ver FreeKill-release/
         if [ -d audio/word ]; then
           mkdir -p FreeKill-release/audio/word
           cp -r audio/word/. FreeKill-release/audio/word/
         fi
-        cp ../Qt/6.10.0/mingw_64/bin/li*.dll FreeKill-release
-        cp ../Qt/Tools/OpenSSLv3/Win_x64/bin/*.dll FreeKill-release
+        cp ../Qt/6.10.0/mingw_64/bin/li*.dll FreeKill-release/
+        cp ../Qt/Tools/OpenSSLv3/Win_x64/bin/*.dll FreeKill-release/
         7z a -t7z FreeKill-release.7z FreeKill-release -r -mx=9 -m0=LZMA2 -ms=10m -mf=on -mhc=on -mmt=on
 
     - name: Upload Release

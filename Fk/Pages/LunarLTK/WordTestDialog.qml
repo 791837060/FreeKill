@@ -605,12 +605,16 @@ Item {  //row Item
   function loadData(data) {
     console.log("WordTestDialog loadData:", data);
     jsonObject = parseLoadPayload(data);
+    var keepServerWord = hasServerWordPair(jsonObject);
     applyWordPayload(jsonObject);
-    if (requestJava !== "true" || hasServerWordPair(jsonObject))
+    if (requestJava !== "true")
       return;
     Qt.callLater(function() {
+      // 始终拉 Anki 卡以绑定 activeCard 并打印牌组/释义；有服务端词库时不覆盖弹窗内容
       var front_back_temp = ankiCall("no");
       console.log("ip:" + spring_ip_or_room_name + "  front_back_temp: " + front_back_temp);
+      if (keepServerWord)
+        return;
       if (front_back_temp && front_back_temp.indexOf("_=front_xxxxxxxxxx_back=_") !== -1) {
         front_back = front_back_temp;
         processString(front_back);

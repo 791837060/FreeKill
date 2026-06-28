@@ -216,12 +216,15 @@ QString cleanWord(const QString &rawWord) {
 }
 
 std::optional<AnkiConnect::WordPair>
-mapFieldsToWordPair(const QJsonObject &fields) {
+mapFieldsToWordPair(const QJsonObject &fields, const QString &seriesTag = {}) {
   const auto word = cleanWord(stripHtml(getField(fields, {"Word", "Back", "word", "back", "B", "b"})));
   if (word.isEmpty())
     return std::nullopt;
 
   const auto meaning = stripHtml(getField(fields, {"Meaning", "Front", "meaning", "front", "D", "d", "释义"}));
+  if (!seriesTag.isEmpty() && !meaning.contains(seriesTag))
+    return std::nullopt;
+
   const auto method = stripHtml(getField(fields, {"Method", "method", "F", "f", "综合法"}));
   const auto association =
       stripHtml(getField(fields, {"Association", "association", "G", "g", "联想法"}));
@@ -251,54 +254,20 @@ QStringList findCardIdsByQueries(const QStringList &queries,
     if (ids.isEmpty())
       continue;
 
-    const qint64 firstId = jsonToCardId(ids.first());
+    QStringList cardIds;
+    cardIds.reserve(ids.size());
+    for (const auto &id : ids)
+      cardIds << QString::number(jsonToCardId(id));
     logInfo(QString("findCards(%1) [%2]").arg(query, label),
-            QString("共 %1 张，取首张 %2").arg(ids.size()).arg(firstId));
-    return {QString::number(firstId)};
+            QString("共 %1 张").arg(cardIds.size()));
+    return cardIds;
   }
 
   return {};
 }
 
-QStringList findStudyCardIds(const QString &playerName) {
-  const QStringList decks = AnkiConnect::deckOrderForUser(playerName);
-  // 与 Anki 一致：复习/到期 → 学习中 → 新卡；交替时优先新卡
-  const QStringList poolOrder = g_nextPool == "due"
-      ? QStringList{"due", "learn", "new"}
-      : QStringList{"new", "due", "learn"};
-
-  for (const auto &deck : decks) {
-    const QStringList dueQueries = withDeckFilter(DUE_QUERIES, deck);
-    const QStringList learnQueries = withDeckFilter(LEARN_QUERIES, deck);
-    const QStringList newQueries = withDeckFilter(NEW_QUERIES, deck);
-
-    for (const auto &poolName : poolOrder) {
-      QStringList queries;
-      QString label;
-      if (poolName == "due") {
-        queries = dueQueries;
-        label = QStringLiteral("复习");
-      } else if (poolName == "learn") {
-        queries = learnQueries;
-        label = QStringLiteral("学习中");
-      } else {
-        queries = newQueries;
-        label = QStringLiteral("新卡");
-      }
-
-      const auto cardIds = findCardIdsByQueries(queries, QString("%1 %2").arg(label, deck));
-      if (cardIds.isEmpty())
-        continue;
-
-      g_nextPool = (poolName == "new") ? "due" : "new";
-      return cardIds;
-    }
-  }
-
-  return {};
-}
-
-std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
+std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId,
+                                                            const QString &seriesTag) {
   if (cardId <= 0)
     return std::nullopt;
 
@@ -329,16 +298,14 @@ std::optional<AnkiConnect::WordPair> loadWordPairFromCardId(qint64 cardId) {
     return std::nullopt;
 
   const auto fields = notes.first().toObject().value("fields").toObject();
-  const auto pair = mapFieldsToWordPair(fields);
+  const auto pair = mapFieldsToWordPair(fields, seriesTag);
   if (!pair.has_value())
     return std::nullopt;
 
-  const QString meaning =
-      stripHtml(getField(fields, {"Meaning", "Front", "meaning", "front", "D", "d", "释义"}));
-  logInfo(QString("选中单词 cardId=%1  牌组=%2  释义=%3")
-              .arg(cardId)
+  logInfo(QString("取词成功 牌组=%1 cardId=%2")
               .arg(deckName.isEmpty() ? "-" : deckName)
-              .arg(meaning.isEmpty() ? "-" : meaning));
+              .arg(cardId),
+          pair->front.isEmpty() ? "-" : pair->front);
 
   g_activeCardId = cardId;
   g_mistakeCount = 0;
@@ -415,6 +382,10 @@ QStringList deckOrderForUser(const QString &playerName) {
                                 QStringLiteral("橙"));
 }
 
+QString seriesTagForUser(const QString &playerName) {
+  return isUlPlayer(playerName) ? QStringLiteral("佳") : QStringLiteral("橙");
+}
+
 QString getAnkiDeckForUser(const QString &playerName) {
   const auto order = deckOrderForUser(playerName);
   if (!order.isEmpty())
@@ -469,28 +440,54 @@ bool submitFeedback(int mistakeCount) {
 }
 
 std::optional<WordPair> getNextDueCard(qint64 skipCardId, const QString &playerName) {
+  const QString seriesTag = seriesTagForUser(playerName);
+  const QStringList decks = deckOrderForUser(playerName);
+  const QStringList poolOrder = g_nextPool == "due"
+      ? QStringList{"due", "learn", "new"}
+      : QStringList{"new", "due", "learn"};
+
   for (int attempt = 0; attempt < 3; ++attempt) {
     if (attempt > 0)
       QThread::msleep(100);
 
-    const auto cardIdStrings = findStudyCardIds(playerName);
-    if (cardIdStrings.isEmpty())
-      return std::nullopt;
+    for (const auto &deck : decks) {
+      const QStringList dueQueries = withDeckFilter(DUE_QUERIES, deck);
+      const QStringList learnQueries = withDeckFilter(LEARN_QUERIES, deck);
+      const QStringList newQueries = withDeckFilter(NEW_QUERIES, deck);
 
-    qint64 cardId = cardIdStrings.first().toLongLong();
-    if (skipCardId >= 0) {
-      cardId = -1;
-      for (const auto &idString : cardIdStrings) {
-        const auto id = idString.toLongLong();
-        if (id != skipCardId) {
-          cardId = id;
-          break;
+      for (const auto &poolName : poolOrder) {
+        QStringList queries;
+        QString label;
+        if (poolName == "due") {
+          queries = dueQueries;
+          label = QStringLiteral("复习");
+        } else if (poolName == "learn") {
+          queries = learnQueries;
+          label = QStringLiteral("学习中");
+        } else {
+          queries = newQueries;
+          label = QStringLiteral("新卡");
+        }
+
+        const auto cardIdStrings =
+            findCardIdsByQueries(queries, QString("%1 %2").arg(label, deck));
+        if (cardIdStrings.isEmpty())
+          continue;
+
+        for (const auto &idString : cardIdStrings) {
+          const auto id = idString.toLongLong();
+          if (skipCardId >= 0 && id == skipCardId)
+            continue;
+          if (auto pair = loadWordPairFromCardId(id, seriesTag)) {
+            g_nextPool = (poolName == "new") ? "due" : "new";
+            return pair;
+          }
         }
       }
     }
 
-    if (cardId > 0)
-      return loadWordPairFromCardId(cardId);
+    if (attempt == 0)
+      logWarn(QString("未找到可学单词卡 player=%1 tag=%2").arg(playerName, seriesTag));
   }
   return std::nullopt;
 }
