@@ -24,6 +24,12 @@ cp -r ../packages/standard assets/res/packages
 cp -r ../packages/standard_cards assets/res/packages
 cp -r ../packages/maneuvering assets/res/packages
 cp -r ../packages/test assets/res/packages
+cp -r ../packages/freekill-core assets/res/packages
+cp -r ../packages/mobile assets/res/packages
+cp -r ../packages/mougong assets/res/packages
+cp -r ../packages/ol assets/res/packages
+cp -r ../packages/tenyear assets/res/packages
+cp -r ../packages/utility assets/res/packages
 rm assets/res/packages/test/test.lua
 cp ../packages/init.sql assets/res/packages
 cp -r ../Fk assets/res
