@@ -129,8 +129,8 @@ jobs:
         cd android
         sudo apt install -y dos2unix
         sed -i 's/function //g' copy_assets.sh  # FIX THIS
-        dos2unix copy_assets.sh
-        chmod +x copy_assets.sh
+        dos2unix ./copy_assets.sh
+        chmod +x ./copy_assets.sh
         ./copy_assets.sh || echo "" # fail on copy cert, ubuntu is not arch
         cd assets/res
         cp -r /etc/ssl/certs .
@@ -138,8 +138,8 @@ jobs:
         curl https://raw.githubusercontent.com/Qsgs-Fans/freekill-server-list/master/server-list.json > server-list.json
         cd ../..
         echo ${FKVER%)} > ../fk_ver
-        dos2unix genfkver.sh
-        chmod +x genfkver.sh
+        dos2unix ../genfkver.sh
+        chmod +x ../genfkver.sh
         ../genfkver.sh
         cp ../fk_ver assets/res
 
