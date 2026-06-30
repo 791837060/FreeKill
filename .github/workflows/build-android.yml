@@ -127,7 +127,7 @@ jobs:
         cp lang/en_US.qm .
         FKVER=$(cat CMakeLists.txt | grep 'project(FreeKill' | cut -d ' ' -f 3)
         cd android
-        apt install -y dos2unix
+        sudo apt install -y dos2unix
         sed -i 's/function //g' copy_assets.sh  # FIX THIS
         dos2unix copy_assets.sh
         chmod +x copy_assets.sh
