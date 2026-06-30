@@ -25,20 +25,12 @@ cp -r ../packages/standard_cards assets/res/packages
 cp -r ../packages/maneuvering assets/res/packages
 cp -r ../packages/test assets/res/packages
 rm assets/res/packages/test/test.lua
-if [ -d ../packages/freekill-core ]; then
-  cp -r ../packages/freekill-core assets/res/packages/freekill-core
-  rm -rf assets/res/packages/freekill-core/.git
-fi
-cp ../packages/*.sql assets/res/packages
+cp ../packages/init.sql assets/res/packages
 cp -r ../Fk assets/res
 mkdir assets/res/server
-cp ../server/*.sql assets/res/server
-mkdir assets/res/client
-cp ../client/*.sql assets/res/client
+cp ../server/init.sql assets/res/server
 cp ../LICENSE assets/res
 cp ../zh_CN.qm assets/res
-cp ../en_US.qm assets/res
-cp ../vi_VN.qm assets/res
 cp ../fk_ver assets/res
 cp ../waiting_tips.txt assets/res
 
