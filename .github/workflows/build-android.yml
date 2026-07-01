@@ -159,34 +159,25 @@ jobs:
       run: make -j2
         
         
-        # =========================
-        # ✅ 关键修改：build 阶段签名
-        # =========================
+      # ======================================================
+      # ✅ 关键修复：在 build 阶段签名（用 r0adkll）
+      # ======================================================
     - name: Sign APK (build stage)
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y apksigner
-         
-        UNSIGNED=build/android-build/build/outputs/apk/release/android-build-release-unsigned.apk
-        SIGNED=build/android-build/build/outputs/apk/release/android-build-release-signed.apk
-         
-        echo "${{ secrets.KEY_STORE }}" | base64 -d > keystore.jks
-         
-        apksigner sign \
-          --ks keystore.jks \
-          --ks-key-alias "${{ secrets.KEY_STORE_ALIAS }}" \
-          --ks-pass pass:${{ secrets.KEY_STORE_PASSWORD }} \
-          --key-pass pass:${{ secrets.KEY_STORE_PASSWORD }} \
-          --out "$SIGNED" \
-          "$UNSIGNED"
-         
-        apksigner verify "$SIGNED"  
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
+      with:
+        releaseDirectory: build/android-build/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.KEY_STORE }}
+        alias: ${{ secrets.KEY_STORE_ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "35.0.0"
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: apk
-        path: build/android-build/build/outputs/apk/release/android-build-release-signed.apk
+        path: build/android-build/build/outputs/apk/release/*.apk
 
   release:
     name: Release APK
@@ -214,7 +205,7 @@ jobs:
 
     - name: Rename APK
       run: |
-        mv apk/android-build-release-signed.apk \
+        mv apk/*.apk \
           apk/FreeKill-${{ steps.previoustag.outputs.tag }}.apK
 
     - name: Upload Release APK
