@@ -14,7 +14,7 @@ QT_ANDROID="$QT/android_arm64_v8a"
 
 OPENSSL_DIR="$ROOT/openssl-3.1.8"
 LIBGIT2_DIR="$ROOT/libgit2"
-BACK_OPENSSL="/root/Tools_ul/back/android_openssl"
+BACK_OPENSSL="/root/Tools_ul/FreeKill/openssl-3.1.8/android_openssl/"
 
 NDK_VERSION="27.2.12479018"
 ANDROID_API=23
@@ -177,5 +177,22 @@ cd "$PROJECT/build"
 dos2unix "$PROJECT/genfkver.sh" || true
 
 make -j2
+
+############################################
+# 9. APK 签名 /root/Tools_ul/FreeKill/android
+############################################
+APK_UNSIGNED=$(find "$PROJECT/build/android-build/build/outputs/apk/release" -name "*unsigned.apk" | head -n 1 || true)
+
+if [ -n "$APK_UNSIGNED" ]; then
+  echo ">>> Signing APK..."
+
+  "$ANDROID/build-tools/35.0.0/apksigner" sign \
+    --ks "$PROJECT/freekill-release.keystore" \
+    --ks-key-alias freekill \
+    --ks-pass pass:123456 \
+    --key-pass pass:123456 \
+    --out "${APK_UNSIGNED%-unsigned.apk}-signed.apk" \
+    "$APK_UNSIGNED"
+fi
 
 echo ">>> BUILD SUCCESS"
