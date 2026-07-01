@@ -134,6 +134,7 @@ jobs:
         ./copy_assets.sh || echo "" # fail on copy cert, ubuntu is not arch
         cd assets/res
         cp -r /etc/ssl/certs .
+        mkdir -p certs
         cp /usr/share/ca-certificates/mozilla/* certs/
         curl https://raw.githubusercontent.com/Qsgs-Fans/freekill-server-list/master/server-list.json > server-list.json
         cd ../..
@@ -156,6 +157,30 @@ jobs:
     - name: Build project
       working-directory: ${{github.workspace}}/build
       run: make -j2
+        
+        
+        # =========================
+        # ✅ 关键修改：build 阶段签名
+        # =========================
+    - name: Sign APK (build stage)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y apksigner
+         
+        UNSIGNED=build/android-build/build/outputs/apk/release/android-build-release-unsigned.apk
+        SIGNED=build/android-build/build/outputs/apk/release/android-build-release-signed.apk
+         
+        echo "${{ secrets.KEY_STORE }}" | base64 -d > keystore.jks
+         
+        apksigner sign \
+          --ks keystore.jks \
+          --ks-key-alias "${{ secrets.KEY_STORE_ALIAS }}" \
+          --ks-pass pass:${{ secrets.KEY_STORE_PASSWORD }} \
+          --key-pass pass:${{ secrets.KEY_STORE_PASSWORD }} \
+          --out "$SIGNED" \
+          "$UNSIGNED"
+         
+        apksigner verify "$SIGNED"  
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
@@ -187,22 +212,9 @@ jobs:
         name: apk
         path: apk
 
-    - uses: r0adkll/sign-android-release@v1
-      name: Sign app APK
-      # ID used to access action output
-      id: sign_app
-      with:
-        releaseDirectory: apk
-        signingKeyBase64: ${{ secrets.KEY_STORE }}
-        alias: ${{ secrets.KEY_STORE_ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-      env:
-        # override default build-tools version (29.0.3) -- optional
-        BUILD_TOOLS_VERSION: "34.0.0"
-
     - name: Rename APK
       run: |
-        mv ${{ steps.sign_app.outputs.signedReleaseFile }} \
+        mv apk/android-build-release-signed.apk \
           apk/FreeKill-${{ steps.previoustag.outputs.tag }}.apK
 
     - name: Upload Release APK
