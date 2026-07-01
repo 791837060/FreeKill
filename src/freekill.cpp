@@ -10,6 +10,7 @@ using namespace fkShell;
 #include "server/cli/shell.h"
 
 #if defined(Q_OS_WIN32)
+#include <windows.h>
 #include "applink.c"
 #endif
 
@@ -143,18 +144,18 @@ void fkMsgHandler(QtMsgType type, const QMessageLogContext &context,
     break;
   }
 
-  auto dateStr = QString::asprintf("%02d/%02d", date.month(), date.day());
-  auto timeStr = QTime::currentTime().toString("hh:mm:ss");
+  auto dateStr = QString::asprintf("%02d-%02d-%02d", date.year(), date.month(), date.day());
+  auto timeStr = QTime::currentTime().toString("hh:mm:ss.zzz");
 #ifndef Q_OS_WIN32
   QTextStream out(stdout);
   out << dateStr << " " << timeStr << " " << threadName <<
     "[" << levelMark << "] " << msg << Qt::endl;
 #else
-  // 略win区，你赢了
-  // 但至少win肯定支持wchar_t，%ls放心用
-  printf("%ls %ls %ls[%ls] %ls\r\n", qUtf16Printable(dateStr),
-         qUtf16Printable(timeStr), qUtf16Printable(threadName),
-         qUtf16Printable(levelMark), qUtf16Printable(msg));
+  // Use UTF-8 for Windows console
+  printf("%s %s %s[%s] %s\n", qUtf8Printable(dateStr),
+         qUtf8Printable(timeStr), qUtf8Printable(threadName),
+         qUtf8Printable(levelMark), qUtf8Printable(msg));
+  fflush(stdout);
 #endif
   *ofs << dateStr << " " << timeStr << " " << threadName <<
     "[" << levelMarkNoColor << "] " << msg << Qt::endl;
@@ -324,6 +325,15 @@ int freekill_main(int argc, char *argv[]) {
 #ifdef Q_OS_WIN32
   // 设置 QML 使用 OpenGL 渲染
   QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+#elif defined(Q_OS_ANDROID)
+  // 设置 QML 使用 OpenGL 渲染
+  QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
+  // 在此基础上再指定使用OpenGL ES
+  {
+    auto fmt = QSurfaceFormat::defaultFormat();
+    fmt.setRenderableType(QSurfaceFormat::OpenGLES);
+    QSurfaceFormat::setDefaultFormat(fmt);
+  }
 #endif
 
 #define SHOW_SPLASH_MSG(msg)                                                   \
@@ -422,7 +432,7 @@ int freekill_main(int argc, char *argv[]) {
 #elif defined(Q_OS_WIN32)
   qputenv("QT_MEDIA_BACKEND", "windows");
   system = QStringLiteral("Win");
-  ::system("chcp 65001");
+  SetConsoleOutputCP(CP_UTF8);
 #elif defined(Q_OS_LINUX)
   system = QStringLiteral("Linux");
 #else

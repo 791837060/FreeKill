@@ -88,7 +88,7 @@ W.PageBase {
             // item.selectable = false;
           }
 
-          if (popupBox.item != null && popupBox.pendingLoadData === null) {
+          if (popupBox.item != null) {
             popupBox.item.finished();
           }
 
@@ -547,24 +547,12 @@ W.PageBase {
   Loader {
     id: popupBox
     z: 999
-    property var pendingLoadData: null
-    onLoaded: {
-      if (!item)
-        return;
-      if (pendingLoadData !== null && item.loadData) {
-        item.loadData(pendingLoadData)
-        pendingLoadData = null
-      }
-      if (item.finished) {
-        item.finished.connect(function() {
-          popupBox.source = ""
-        })
-      }
-      moveToCenter()
-    }
     onSourceChanged: {
       if (item === null)
         return;
+      item.finished.connect(() => {
+        sourceComponent = undefined;
+      });
       item.widthChanged.connect(() => {
         popupBox.moveToCenter();
       });

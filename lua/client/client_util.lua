@@ -1344,8 +1344,7 @@ function GetUIDataOfSettings(mode, settings, isBoardGame)
   if isBoardGame then
     ui_settings = Fk:getBoardGame(mode).ui_settings
   else
-    local gameMode = Fk.game_modes[mode]
-    ui_settings = gameMode and gameMode.ui_settings
+    ui_settings = Fk.game_modes[mode].ui_settings
   end
 
   if not ui_settings then return {} end

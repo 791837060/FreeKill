@@ -49,7 +49,7 @@ QString PackMan::getPackSummary() {
 }
 
 void PackMan::loadSummary(const QString &jsonData, bool useThread) {
-  auto f = [=]() {
+  auto f = [=, this] {
     // First, disable all packages
     for (auto e : db->select("SELECT name FROM packages;")) {
       disablePack(e["name"]);
@@ -132,7 +132,7 @@ int PackMan::downloadNewPack(const QString &url, bool useThread) {
   static auto sql_update = QString("INSERT INTO packages (name,url,hash,enabled) \
       VALUES ('%1','%2','%3',1);");
 
-  auto threadFunc = [=]() -> int {
+  auto threadFunc = [=, this] {
     int err = clone(url);
     // if (err < 0) {
     //   return err;
@@ -256,12 +256,74 @@ void PackMan::syncCommitHashToDatabase() {
   }
 }
 
+static bool is_head_newer_than_commit(const char *repo_path, const char *commit_hash) {
+  git_repository *repo = NULL;
+  git_commit *given_commit = NULL;
+  git_commit *head_commit = NULL;
+  bool result = false;
+
+  // 初始化 libgit2
+  git_libgit2_init();
+
+  // 打开仓库
+  if (git_repository_open(&repo, repo_path) != 0) {
+    // fprintf(stderr, "Could not open repository: %s\n", repo_path);
+    goto cleanup;
+  }
+
+  // 解析给定的 commit
+  git_oid given_oid;
+  if (git_oid_fromstr(&given_oid, commit_hash) != 0) {
+    // fprintf(stderr, "Invalid commit hash: %s\n", commit_hash);
+    goto cleanup;
+  }
+
+  // 检查给定的 commit 是否存在
+  if (git_commit_lookup(&given_commit, repo, &given_oid) != 0) {
+    // fprintf(stderr, "Commit not found: %s\n", commit_hash);
+    goto cleanup;
+  }
+
+  // 获取 HEAD 指向的 commit
+  git_oid head_oid;
+  if (git_reference_name_to_id(&head_oid, repo, "HEAD") != 0) {
+    // fprintf(stderr, "Could not get HEAD\n");
+    goto cleanup;
+  }
+
+  if (git_commit_lookup(&head_commit, repo, &head_oid) != 0) {
+    // fprintf(stderr, "Could not lookup HEAD commit\n");
+    goto cleanup;
+  }
+
+  // 比较两个 commit 的先后关系
+  if (git_graph_descendant_of(repo, &head_oid, &given_oid) == 1) {
+    result = true;
+  }
+
+  // 补：相同的话也可以
+  if (strncmp((char*)head_oid.id, (char*)given_oid.id, 20) == 0) {
+    result = true;
+  }
+
+cleanup:
+  git_commit_free(given_commit);
+  git_commit_free(head_commit);
+  git_repository_free(repo);
+  git_libgit2_shutdown();
+
+  return result;
+}
+
+// 写死一个freekill-core的commit（一般是发布时freekill-core的版本）
+// 达到强制加载高版本脚本的效果 防止老core爆炸
+static const char *min_commit = "b57d89fa4c1a1ae5a0711b97598747b8cbc7428e";
+
 bool PackMan::shouldUseCore() {
-  if (!QFile::exists("packages/freekill-core"))
-    return false;
-  if (disabled_packs.contains("freekill-core"))
-    return false;
-  return true;
+  if (!QFile::exists("packages/freekill-core")) return false;
+  if (disabled_packs.contains("freekill-core")) return false;
+  bool ret = is_head_newer_than_commit("packages/freekill-core", min_commit);
+  return ret;
 }
 
 #define GIT_FAIL                                                               \

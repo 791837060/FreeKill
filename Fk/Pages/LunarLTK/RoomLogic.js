@@ -1490,39 +1490,25 @@ callbacks["TakeAG"] = (sender, data) => {
 
 callbacks["CloseAG"] = () => roomScene.manualBox.item.close();
 
-function openPopupLoader(url, dat) {
-  roomScene.popupBox.pendingLoadData = dat ?? null;
-  const applyPending = () => {
-    const box = roomScene.popupBox;
-    if (box.pendingLoadData !== null && box.item && box.item.loadData) {
-      box.item.loadData(box.pendingLoadData);
-      box.pendingLoadData = null;
-    }
-  };
-  if (roomScene.popupBox.source === url && roomScene.popupBox.item) {
-    applyPending();
-  } else if (roomScene.popupBox.source === url) {
-    roomScene.popupBox.source = "";
-    Qt.callLater(() => { roomScene.popupBox.source = url; });
-  } else {
-    roomScene.popupBox.source = url;
-  }
-  if (roomScene.state !== "active")
-    roomScene.state = "active";
-  const reqTimeout = Backend.getRequestData().timeout ?? 0;
-  if (reqTimeout >= 86400)
-    roomScene.progress.visible = false;
-}
-
 callbacks["CustomDialog"] = (sender, data) => {
-  openPopupLoader(AppPath + "/" + data.path, data.data);
+  const path = data.path;
+  const dat = data.data;
+  roomScene.activate();
+  roomScene.popupBox.source = AppPath + "/" + path;
+  if (dat) {
+    roomScene.popupBox.item.loadData(dat);
+  }
 }
 
 callbacks["MiniGame"] = (sender, data) => {
   const game = data.type;
   const dat = data.data;
   const gdata = Ltk.getMiniGame(game, Self.id, JSON.stringify(dat));
-  openPopupLoader(AppPath + "/" + gdata.qml_path + ".qml", dat);
+  roomScene.activate();
+  roomScene.popupBox.source = AppPath + "/" + gdata.qml_path + ".qml";
+  if (dat) {
+    roomScene.popupBox.item.loadData(dat);
+  }
 }
 
 callbacks["UpdateMiniGame"] = (sender, data) => {

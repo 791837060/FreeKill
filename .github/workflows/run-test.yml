@@ -11,13 +11,17 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout git repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v3
 
     - name: Install dev packages
       run: |
         sudo apt-get install -y swig cmake make gcc g++
         sudo apt-get install -y liblua5.4-dev libsqlite3-dev libreadline-dev libssl-dev libgit2-dev
         sudo apt-get install -y qt6-base-dev qt6-tools-dev qt6-tools-dev-tools
+
+    - name: Install freekill-core
+      run: |
+        git clone https://github.com/Qsgs-Fans/freekill-core.git packages/freekill-core
 
     - name: Build
       run: |

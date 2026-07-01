@@ -134,7 +134,9 @@ void QmlBackend::joinServer(QString address, ushort port) {
   if (ClientInstance != nullptr)
     return;
 
-  auto future = QtConcurrent::run([&] {
+  auto future = QtConcurrent::run([] {
+    QThread::currentThread()->setObjectName("Pool");
+
     auto ret = new Client;
     ret->moveToThread(qApp->thread());
     return ret;
@@ -151,11 +153,11 @@ void QmlBackend::joinServer(QString address, ushort port) {
   connect(client, &Client::notifyUI, this, &QmlBackend::notifyUI);
   engine->rootContext()->setContextProperty("ClientInstance", client);
   engine->rootContext()->setContextProperty("Self", client->getSelf());
-  connect(client, &Client::destroyed, this, [=](){
+  connect(client, &Client::destroyed, this, [=, this] {
     engine->rootContext()->setContextProperty("Self", &dummyPlayer);
     engine->rootContext()->setContextProperty("ClientInstance", nullptr);
   });
-  connect(client, &Client::error_message, this, [=](const QString &msg) {
+  connect(client, &Client::error_message, this, [=, this](const QString &msg) {
     if (replayer) {
       emit replayerShutdown();
     }
@@ -163,7 +165,7 @@ void QmlBackend::joinServer(QString address, ushort port) {
     emit notifyUI("ErrorMsg", msg);
     emit notifyUI("BackToStart", "[]");
   });
-  connect(client, &Client::self_changed, this, [=](){
+  connect(client, &Client::self_changed, this, [=, this] {
     engine->rootContext()->setContextProperty("Self", client->getSelf());
   });
   connect(client, &Client::toast_message, this, &QmlBackend::showToast);
@@ -233,55 +235,36 @@ QVariant QmlBackend::evalLuaExp(const QString &lua) {
   return L->eval(lua);
 }
 
-QString QmlBackend::getPublicServerList() {
-  QFile conf("server-list.json");
-  // TODO: Download new JSON via http
+static QString touchAndRead(const QString &fname, QString init_conf) {
+  QFile conf(fname);
   if (!conf.exists()) {
-    conf.open(QIODevice::WriteOnly);
-    static const char *init_conf = "[]";
-    conf.write(init_conf);
+    if (!conf.open(QIODevice::WriteOnly)) return init_conf;
+    conf.write(init_conf.toUtf8());
     conf.close();
     return init_conf;
   }
-  conf.open(QIODevice::ReadOnly);
+  if (!conf.open(QIODevice::ReadOnly)) return init_conf;
   auto ret = conf.readAll();
   conf.close();
   return ret;
+}
+
+QString QmlBackend::getPublicServerList() {
+  // TODO: Download new JSON via http
+  return touchAndRead("server-list.json", "[]");
 }
 
 QString QmlBackend::loadConf() {
-  QFile conf("freekill.client.config.json");
-  if (!conf.exists()) {
-    conf.open(QIODevice::WriteOnly);
-    static const char *init_conf = "{}";
-    conf.write(init_conf);
-    conf.close();
-    return init_conf;
-  }
-  conf.open(QIODevice::ReadOnly);
-  auto ret = conf.readAll();
-  conf.close();
-  return ret;
+  return touchAndRead("freekill.client.config.json", "{}");
 }
 
 QString QmlBackend::loadTips() {
-  QFile conf("waiting_tips.txt");
-  if (!conf.exists()) {
-    conf.open(QIODevice::WriteOnly);
-    static const char *init_conf = "转啊~ 转啊~";
-    conf.write(init_conf);
-    conf.close();
-    return init_conf;
-  }
-  conf.open(QIODevice::ReadOnly);
-  auto ret = conf.readAll();
-  conf.close();
-  return ret;
+  return touchAndRead("waiting_tips.txt", "转啊~ 转啊~");
 }
 
 void QmlBackend::saveConf(const QString &conf) {
   QFile c("freekill.client.config.json");
-  c.open(QIODevice::WriteOnly);
+  if (!c.open(QIODevice::WriteOnly)) return;
   c.write(conf.toUtf8());
   c.close();
 }
@@ -486,7 +469,7 @@ void QmlBackend::getServerInfo(const QString &address, ushort port) {
   ask.append(QString(",%1").arg(port).toUtf8());
 
   if (QHostAddress(addr).isNull()) { // 不是ip？考虑解析域名
-    QHostInfo::lookupHost(addr, this, [=](const QHostInfo &host) {
+    QHostInfo::lookupHost(addr, this, [=, this](const QHostInfo &host) {
       if (host.error() == QHostInfo::NoError) {
         udpSocket->writeDatagram(ask, ask.size(),
             host.addresses().first(), port);
@@ -495,7 +478,7 @@ void QmlBackend::getServerInfo(const QString &address, ushort port) {
         && !address.contains(QChar(':'))){ // 直接解析主机失败，尝试获取其SRV记录
         QDnsLookup* dns = new QDnsLookup(QDnsLookup::SRV, "_freekill._tcp." + addr);
         // SRV解析回调
-        connect(dns, &QDnsLookup::finished, this, [=]() {
+        connect(dns, &QDnsLookup::finished, this, [=, this]() {
           if (dns->error() != QDnsLookup::NoError) {
             return;
           }
@@ -506,7 +489,7 @@ void QmlBackend::getServerInfo(const QString &address, ushort port) {
           }
           const QDnsServiceRecord &record = records.first();
           // 获取到真实端口
-          QHostInfo::lookupHost(record.target(), [=](const QHostInfo &host) {
+          QHostInfo::lookupHost(record.target(), [=, this](const QHostInfo &host) {
             if (host.error() == QHostInfo::NoError) {
               // 获取到真实地址
               udpSocket->writeDatagram(ask, ask.size(),
@@ -585,7 +568,7 @@ void QmlBackend::removeRecord(const QString &fname) {
 void QmlBackend::playRecord(const QString &fname) {
   auto replayer = new Replayer(this, fname);
   setReplayer(replayer);
-  connect(replayer, &Replayer::destroyed, this, [=](){
+  connect(replayer, &Replayer::destroyed, this, [=, this] {
     setReplayer(nullptr);
   });
   replayer->start();
@@ -594,7 +577,7 @@ void QmlBackend::playRecord(const QString &fname) {
 void QmlBackend::playBlobRecord(int id) {
   auto replayer = new Replayer(this, id);
   setReplayer(replayer);
-  connect(replayer, &Replayer::destroyed, this, [=](){
+  connect(replayer, &Replayer::destroyed, this, [=, this] {
     setReplayer(nullptr);
   });
   replayer->start();

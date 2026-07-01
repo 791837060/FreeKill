@@ -63,27 +63,22 @@ Item {
     Component.onCompleted: {
       playerNum.value = Config.preferedPlayerNum;
 
-      const banPkg = Config.curScheme?.banPkg ?? {};
-      for (let k in banPkg) {
+      for (let k in Config.curScheme.banPkg) {
         Lua.call("UpdatePackageEnable", k, false);
       }
-      (Config.curScheme?.banCardPkg ?? []).forEach(p => {
-        Lua.call("UpdatePackageEnable", p, false);
-      });
-      Config.refreshCurScheme();
+      Config.curScheme.banCardPkg.forEach(p => Lua.call("UpdatePackageEnable", p, false));
+      Config.curSchemeChanged();
     }
   }
 
   function refreshGameMode(gameMode) {
     const data = Lua.fn(`function(mode)
       local m = Fk.game_modes[mode]
-      if not m then return nil end
       return {
         minPlayer = m.minPlayer,
         maxPlayer = m.maxPlayer,
       }
     end`)(gameMode);
-    if (!data) return;
     playerNum.from = data.minPlayer;
     playerNum.to = data.maxPlayer;
   }

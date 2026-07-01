@@ -13,7 +13,7 @@ jobs:
     steps:
 
     - name: Checkout Git Repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v3
       with:
         submodules: true
 
@@ -23,7 +23,7 @@ jobs:
         args: install swig -y
 
     - name: Install Qt
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         aqtversion: '==3.1.*'
         py7zrversion: '>=0.20.2'
@@ -50,11 +50,11 @@ jobs:
     - name: Configure CMake Project
       working-directory: ${{github.workspace}}
       env:
-        CMAKE_PREFIX_PATH: ${{env.QT_ROOT_DIR}}
-        CC: ${{env.QT_ROOT_DIR}}/../../Tools/mingw1310_64/bin/gcc.exe
-        CXX: ${{env.QT_ROOT_DIR}}/../../Tools/mingw1310_64/bin/g++.exe
-        RC: ${{env.QT_ROOT_DIR}}/../../Tools/mingw1310_64/bin/windres.exe
-        OPENSSL_ROOT_DIR: ${{env.QT_ROOT_DIR}}/../../Tools/OpenSSLv3/Win_x64
+        CMAKE_PREFIX_PATH: ${{env.Qt6_Dir}}
+        CC: ${{env.Qt6_Dir}}/../../Tools/mingw1310_64/bin/gcc.exe
+        CXX: ${{env.Qt6_Dir}}/../../Tools/mingw1310_64/bin/g++.exe
+        RC: ${{env.Qt6_Dir}}/../../Tools/mingw1310_64/bin/windres.exe
+        OPENSSL_ROOT_DIR: ${{env.Qt6_Dir}}/../../Tools/OpenSSLv3/Win_x64
         OPENSSL_INCLUDE_DIR: ${{env.OPENSSL_ROOT_DIR}}/include
         OPENSSL_CRYPTO_LIBRARY: ${{env.OPENSSL_ROOT_DIR}}/bin/libcrypto-3-x64.dll
       run: |
@@ -68,31 +68,22 @@ jobs:
       working-directory: ${{github.workspace}}
       shell: bash
       run: |
-        mkdir -p FreeKill-release
-        git checkout-index -a -f --prefix=FreeKill-release/
-        cp build/FreeKill.exe FreeKill-release/
-        cp -r Fk FreeKill-release/
-        if [ -d packages/freekill-core ]; then
-          mkdir -p FreeKill-release/packages/freekill-core
-          cp -r packages/freekill-core/. FreeKill-release/packages/freekill-core/
-          rm -rf FreeKill-release/packages/freekill-core/.git
-        fi
+        mkdir FreeKill-release
+        cp build/FreeKill.exe FreeKill-release
+        cp -r Fk FreeKill-release
         cd FreeKill-release
-        rm -rf qml plugins .git .github android doc lib lang translations src
-        rm -f .git*
-        windeployqt --no-translations FreeKill.exe
+        windeployqt FreeKill.exe
+        cp -r ../.git .
+        git restore .
+        rm -rf .git* android doc lib lang translations src
         curl https://raw.githubusercontent.com/Qsgs-Fans/freekill-server-list/master/server-list.json > server-list.json
         cd ..
-        cp lib/win/* FreeKill-release/
-        cp build/zh_CN.qm FreeKill-release/
-        cp build/en_US.qm FreeKill-release/
-        cp fk_ver FreeKill-release/
-        if [ -d audio/word ]; then
-          mkdir -p FreeKill-release/audio/word
-          cp -r audio/word/. FreeKill-release/audio/word/
-        fi
-        cp ../Qt/6.10.0/mingw_64/bin/li*.dll FreeKill-release/
-        cp ../Qt/Tools/OpenSSLv3/Win_x64/bin/*.dll FreeKill-release/
+        cp lib/win/* FreeKill-release
+        cp build/zh_CN.qm FreeKill-release
+        cp build/en_US.qm FreeKill-release
+        cp fk_ver FreeKill-release
+        cp ../Qt/6.10.0/mingw_64/bin/li*.dll FreeKill-release
+        cp ../Qt/Tools/OpenSSLv3/Win_x64/bin/*.dll FreeKill-release
         7z a -t7z FreeKill-release.7z FreeKill-release -r -mx=9 -m0=LZMA2 -ms=10m -mf=on -mhc=on -mmt=on
 
     - name: Upload Release
@@ -107,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Git Repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
 

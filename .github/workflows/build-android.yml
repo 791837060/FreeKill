@@ -14,7 +14,7 @@ jobs:
     steps:
 
     - name: Checkout Git Repo
-      uses: actions/checkout@v5
+      uses: actions/checkout@v3
       with:
         submodules: true
 
@@ -95,7 +95,7 @@ jobs:
         sudo apt-get install -y swig
 
     - name: Install Qt for Host
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         aqtversion: '==3.1.*'
         py7zrversion: '>=0.20.2'
@@ -105,11 +105,8 @@ jobs:
         arch: 'linux_gcc_64'
         modules: 'qtmultimedia qt5compat qtshadertools'
 
-    - name: Remember Qt host path
-      run: echo "QT_HOST_ROOT=${QT_ROOT_DIR}" >> "$GITHUB_ENV"
-
     - name: Install Qt for Android
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         aqtversion: '==3.1.*'
         py7zrversion: '>=0.20.2'
@@ -121,8 +118,8 @@ jobs:
 
     - name: Copy android assets
       run: |
-        "$QT_HOST_ROOT/bin/lrelease" lang/zh_CN.ts
-        "$QT_HOST_ROOT/bin/lrelease" lang/en_US.ts
+        ${Qt6_DIR}/../gcc_64/bin/lrelease lang/zh_CN.ts
+        ${Qt6_DIR}/../gcc_64/bin/lrelease lang/en_US.ts
         cp lang/zh_CN.qm .
         cp lang/en_US.qm .
         FKVER=$(cat CMakeLists.txt | grep 'project(FreeKill' | cut -d ' ' -f 3)
@@ -144,96 +141,70 @@ jobs:
         ../genfkver.sh
         cp ../fk_ver assets/res
 
-    - name: Prepare signing keystore
-      env:
-        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      run: |
-        KEYSTORE="$RUNNER_TEMP/freekill-release.keystore"
-        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
-        echo "QT_ANDROID_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
-        echo "QT_ANDROID_KEYSTORE_ALIAS=$ANDROID_KEY_ALIAS" >> "$GITHUB_ENV"
-        echo "QT_ANDROID_KEYSTORE_STORE_PASS=$ANDROID_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
-        echo "QT_ANDROID_KEYSTORE_KEY_PASS=$ANDROID_KEY_PASSWORD" >> "$GITHUB_ENV"    
-
     - name: Configure CMake Project
       working-directory: ${{github.workspace}}
       run: |
-        export QT_HOST_PATH="$QT_HOST_ROOT"
+        export QT_HOST_PATH=${Qt6_DIR}/../gcc_64/
         export ANDROID_SDK_ROOT=$(pwd)/../android
         export ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018
         export FK_ANDROID_SSL_DIR=$(pwd)/../openssl-3.1.8
         sed -i "s/LinguistTools/Linguist/g" CMakeLists.txt
-        "$QT_ROOT_DIR/bin/qt-cmake" -S . -B ./build -DCMAKE_BUILD_TYPE=MinSizeRel -DQT_ANDROID_SIGN_APK=ON
+        ${Qt6_DIR}/bin/qt-cmake -S . -B ./build -DCMAKE_BUILD_TYPE=MinSizeRel
 
     - name: Build project
       working-directory: ${{github.workspace}}/build
       run: make -j2
-        
 
-
-    - name: Locate signed release APK
-      id: apk
-      working-directory: ${{github.workspace}}
-      run: |
-        for CAND in \
-          build/android-build/build/outputs/apk/release/android-build-release-signed.apk \
-          build/android-build/build/outputs/apk/release/android-build-release.apk \
-          build/android-build/build/outputs/apk/release/android-build-release-unsigned.apk
-        do
-          if [ -f "$CAND" ]; then
-            case "$CAND" in
-              *-unsigned.apk)
-                echo "Release APK is still unsigned; check QT_ANDROID_SIGN_APK and keystore secrets" >&2
-                exit 1
-                ;;
-            esac
-            echo "path=$CAND" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-        done
-        echo "No release APK found:" >&2
-        find build -name '*.apk' >&2 || true
-        exit 1
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: apk
-        path: ${{ steps.apk.outputs.path }}
+        path: build/android-build/build/outputs/apk/release/android-build-release-unsigned.apk
 
   release:
     name: Release APK
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout Git Repo
-        uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
+    - name: Checkout Git Repo
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
 
-      - name: Get Previous tag
-        id: previoustag
-        uses: WyriHaximus/github-action-get-previous-tag@v1
-        with:
-          fallback: 0.0.1
+    - name: Get Previous tag
+      id: previoustag
+      uses: WyriHaximus/github-action-get-previous-tag@v1
+      with:
+        fallback: 0.0.1
 
-      - name: Download APK from build
-        uses: actions/download-artifact@v4
-        with:
-          name: apk
-          path: apk
+    - name: Download APK from build
+      uses: actions/download-artifact@v4
+      with:
+        name: apk
+        path: apk
 
-      - name: Rename release APK
-        run: |
-          SRC=$(ls apk/*.apk | head -1)
-          mv "$SRC" "apk/FreeKill-${{ steps.previoustag.outputs.tag }}.apk"
-      - name: Upload Release APK
-        uses: softprops/action-gh-release@v2
-        with:
-          files: apk/FreeKill-${{ steps.previoustag.outputs.tag }}.apk
-          generate_release_notes: true
+    - uses: r0adkll/sign-android-release@v1
+      name: Sign app APK
+      # ID used to access action output
+      id: sign_app
+      with:
+        releaseDirectory: apk
+        signingKeyBase64: ${{ secrets.KEY_STORE }}
+        alias: ${{ secrets.KEY_STORE_ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+      env:
+        # override default build-tools version (29.0.3) -- optional
+        BUILD_TOOLS_VERSION: "34.0.0"
+
+    - name: Rename APK
+      run: |
+        mv ${{ steps.sign_app.outputs.signedReleaseFile }} \
+          apk/FreeKill-${{ steps.previoustag.outputs.tag }}.apK
+
+    - name: Upload Release APK
+      uses: softprops/action-gh-release@v1
+      with:
+        token: ${{ secrets.MY_TOKEN }}
+        tag_name: ${{ steps.previoustag.outputs.tag }}
+        files: apk/FreeKill-${{ steps.previoustag.outputs.tag }}.apK
 
