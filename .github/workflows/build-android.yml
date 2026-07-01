@@ -144,6 +144,20 @@ jobs:
         ../genfkver.sh
         cp ../fk_ver assets/res
 
+    - name: Prepare signing keystore
+      env:
+        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      run: |
+        KEYSTORE="$RUNNER_TEMP/freekill-release.keystore"
+        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
+        echo "QT_ANDROID_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
+        echo "QT_ANDROID_KEYSTORE_ALIAS=$ANDROID_KEY_ALIAS" >> "$GITHUB_ENV"
+        echo "QT_ANDROID_KEYSTORE_STORE_PASS=$ANDROID_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
+        echo "QT_ANDROID_KEYSTORE_KEY_PASS=$ANDROID_KEY_PASSWORD" >> "$GITHUB_ENV"    
+
     - name: Configure CMake Project
       working-directory: ${{github.workspace}}
       run: |
@@ -158,19 +172,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: make -j2
         
-    - name: Prepare signing keystore
-      env:
-        ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-        ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      run: |
-        KEYSTORE="$RUNNER_TEMP/freekill-release.keystore"
-        echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
-        echo "QT_ANDROID_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
-        echo "QT_ANDROID_KEYSTORE_ALIAS=$ANDROID_KEY_ALIAS" >> "$GITHUB_ENV"
-        echo "QT_ANDROID_KEYSTORE_STORE_PASS=$ANDROID_KEYSTORE_PASSWORD" >> "$GITHUB_ENV"
-        echo "QT_ANDROID_KEYSTORE_KEY_PASS=$ANDROID_KEY_PASSWORD" >> "$GITHUB_ENV"
+
 
     - name: Locate signed release APK
       id: apk
