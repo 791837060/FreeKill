@@ -155,6 +155,15 @@ cp "$PROJECT/fk_ver" "$PROJECT/android/assets/res" || true
 rm -rf "$PROJECT/build"
 
 ############################################
+# Qt Android Signing (correct CI-style)
+############################################
+
+export QT_ANDROID_KEYSTORE_PATH="$PROJECT/freekill-release.keystore"
+export QT_ANDROID_KEYSTORE_ALIAS="freekill"
+export QT_ANDROID_KEYSTORE_STORE_PASS="123456"
+export QT_ANDROID_KEYSTORE_KEY_PASS="123456"
+
+############################################
 # 8. Qt Android build
 ############################################
 "$QT_ANDROID/bin/qt-cmake" \
@@ -168,22 +177,5 @@ cd "$PROJECT/build"
 dos2unix "$PROJECT/genfkver.sh" || true
 
 make -j2
-
-############################################
-# 9. APK 签名
-############################################
-APK_UNSIGNED=$(find "$PROJECT/build/android-build/build/outputs/apk/release" -name "*unsigned.apk" | head -n 1 || true)
-
-if [ -n "$APK_UNSIGNED" ]; then
-  echo ">>> Signing APK..."
-
-  "$ANDROID/build-tools/35.0.0/apksigner" sign \
-    --ks "$PROJECT/freekill-release.keystore" \
-    --ks-key-alias freekill \
-    --ks-pass pass:123456 \
-    --key-pass pass:123456 \
-    --out "${APK_UNSIGNED%-unsigned.apk}-signed.apk" \
-    "$APK_UNSIGNED"
-fi
 
 echo ">>> BUILD SUCCESS"
