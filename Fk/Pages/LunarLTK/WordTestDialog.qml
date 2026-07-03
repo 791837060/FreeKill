@@ -54,23 +54,35 @@ GraphicsBox {
 
     
 
-    Item {  //Column Item
-        width: 1050 // 根据需要设置宽度  
-        height: 35 // 根据需要设置高度  
+    // Item {  //Column Item
+        // width: 1050 // 根据需要设置宽度
+        // height: 35 // 根据需要设置高度
   
-              Text {
-                anchors.fill: parent // 填充整个 Item  
-                verticalAlignment: Text.AlignVCenter // 文本垂直居中  
-                horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
-                textFormat: Text.RichText
-                text: root.meaningLineRich
-                color: "#70DB93"
-                //font.weight: Font.Bold // 设置字体加粗  
-                //font.pixelSize: 30 // 设置字体大小，你可以根据需要调整这个值来放大字体 pointSize
-                font.pointSize: 30
-                height: 35 // 根据字体大小设置合适的高度
-              }
-    }  //Column Item
+              // Text {
+                // anchors.fill: parent // 填充整个 Item
+                // verticalAlignment: Text.AlignVCenter // 文本垂直居中
+                // horizontalAlignment: Text.AlignHCenter // 文本水平也居中（如果需要）
+                // textFormat: Text.RichText
+                // text: root.meaningLineRich
+                // color: "#70DB93"
+                // font.pointSize: 30
+                // height: 35 // 根据字体大小设置合适的高度
+              // }
+    // }  //Column Item
+
+        Item {
+            width: 1050
+            height: 28
+            Text {
+                id: ankiStatusText
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                color: "#FFD700"
+                font.pointSize: 18
+                text: ""
+            }
+        }
 
     Item {  //Column Item
         width: 1050 // 根据需要设置宽度  
@@ -258,33 +270,21 @@ Item {  //row Item
       } //row end
     } //Column Item end  
 
-    Item {
-        width: 1050
-        height: 22
-        Text {
-            id: uiSourceText
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            color: "#88CCFF"
-            font.pointSize: 14
-            text: root.uiSourceLabel
-        }
-    }
+    //Item {
+        //width: 1050
+        //height: 22
+        //Text {
+            //id: uiSourceText
+            //anchors.fill: parent
+            //verticalAlignment: Text.AlignVCenter
+            //horizontalAlignment: Text.AlignHCenter
+            //color: "#88CCFF"
+            //font.pointSize: 14
+            //text: root.uiSourceLabel
+        //}
+    //}
 
-    Item {
-        width: 1050
-        height: 28
-        Text {
-            id: ankiStatusText
-            anchors.fill: parent
-            verticalAlignment: Text.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            color: "#FFD700"
-            font.pointSize: 18
-            text: ""
-        }
-    }
+
         
      
      Item {//Column Item   
@@ -381,7 +381,8 @@ Item {  //row Item
     var meaning = (frontArr && frontArr.length > 0) ? frontArr[0] : "";
     var bracket = (frontArr && frontArr.length > 2) ? frontArr[2] : "";
     var keywords = extractKeywords(getMethodSource());
-    return escapeHtml(meaning) + "   [" + highlightAssociationText(bracket, keywords) + "]";
+    // return escapeHtml(meaning) + "   [" + highlightAssociationText(bracket, keywords) + "]";
+    return highlightAssociationText(bracket, keywords);
   }
 
   function refreshKeywordHighlight() {
@@ -391,14 +392,14 @@ Item {  //row Item
     if (!assoc && backArr && backArr.length > 1)
       assoc = backArr[1];
     var meaning = (frontArr && frontArr.length > 0) ? frontArr[0] : "";
-    meaningLineRich = "[" + highlightAssociationText(assoc, keywords) + "]   "
-        + escapeHtml(meaning);
+    // meaningLineRich = "[" + highlightAssociationText(assoc, keywords) + "]   " + escapeHtml(meaning);
+    meaningLineRich =  escapeHtml(meaning);
     methodLineRich = highlightMethodText(
         (frontArr && frontArr.length > 1) ? frontArr[1] : methodSrc, keywords);
     var backWord = (backArr && backArr.length > 0) ? backArr[0] : "";
     var backMethod = (backArr && backArr.length > 2) ? backArr[2] : "";
-    backLineRich = escapeHtml(backWord) + "   ["
-        + highlightMethodText(backMethod, keywords) + "]";
+    // backLineRich = escapeHtml(backWord) + "   [" + highlightMethodText(backMethod, keywords) + "]";
+    backLineRich = highlightMethodText(backMethod, keywords)
   }
 
   function resetTypingTrack() {
