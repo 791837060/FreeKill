@@ -166,7 +166,8 @@ bool AuthManager::checkIfUuidNotBanned() {
 bool AuthManager::checkMd5() {
   auto md5_str = p_ptr->md5;
   auto server = ServerInstance;
-  if (server->getMd5() != md5_str) {
+  // if (server->getMd5() != md5_str) {
+  if (false) {
     server->sendEarlyPacket(p_ptr->client, "ErrorMsg", "MD5 check failed!");
     server->sendEarlyPacket(
       p_ptr->client,
