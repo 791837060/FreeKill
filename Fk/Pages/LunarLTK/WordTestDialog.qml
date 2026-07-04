@@ -44,7 +44,8 @@ GraphicsBox {
         }
   }
   width: Math.max(140, body.width + 20)
-  height: body.height + title.height + 20
+  // height: body.height + title.height + 20
+  height: body.height + title.height - 120
 
   Column {
     id: body
