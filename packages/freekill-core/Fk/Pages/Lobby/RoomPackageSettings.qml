@@ -80,7 +80,7 @@ Flickable {
               packs.push(orig_name);
             }
             Ltk.updatePackageEnable(orig_name, checked);
-            Config.refreshCurScheme();
+            Config.curSchemeChanged();
           }
         }
       }

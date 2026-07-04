@@ -214,10 +214,6 @@ QtObject {
     getPhoto(id)?.updateLimitSkill(skill, time);
   }
 
-  function updateSkill() {
-    dashboard.refreshData();
-  }
-
   function addNpc(_, data) {
     const [id, name, avatar] = data;
     const photoModelComponent = Qt.createComponent("LunarLtk.Models", "PhotoModel");
@@ -255,7 +251,7 @@ QtObject {
     const models = move.ids.map(id => {
       let card;
       if (fromModel) {
-        const i = fromModel.findIndex(e => e && e.cardId === id);
+        const i = fromModel.findIndex(e => e.cardId === id);
         if (i !== -1) card = fromModel.splice(i, 1)[0];
       }
       return card || Ltk.createCardModel(id, { known: !!data[id.toString()] });
@@ -272,8 +268,8 @@ QtObject {
 
   function setCardFootnote(_, data) {
     const [id, note, virtual] = data;
-    const v = processing.find(e => e && e[virtual ? "virtId" : "cardId"] === id)
-      || discard.find(e => e && e[virtual ? "virtId" : "cardId"] === id);
+    const v = processing.find(e => e[virtual ? "virtId" : "cardId"] === id)
+      || discard.find(e => e[virtual ? "virtId" : "cardId"] === id);
     if (v) {
       v.footnote = note;
       v.footnoteVisible = true;
@@ -283,8 +279,8 @@ QtObject {
   function setCardVirtName(_, data) {
     const [ids, note, virtual] = data;
     ids.forEach(id => {
-      const v = processing.find(e => e && e[virtual ? "virtId" : "cardId"] === id)
-        || discard.find(e => e && e[virtual ? "virtId" : "cardId"] === id);
+      const v = processing.find(e => e[virtual ? "virtId" : "cardId"] === id)
+        || discard.find(e => e[virtual ? "virtId" : "cardId"] === id);
       if (v) v.virtName = note;
     });
   }
@@ -524,35 +520,8 @@ QtObject {
   }
 
   function customDialog(sender, data) {
-    // LunarLtk 用 component；兼容 Fk/Pages/LunarLTK 的 path+data
-    if (data.path && !data.component) {
-      const raw = data.data;
-      let payload = {};
-      if (typeof raw === "string") {
-        try {
-          payload = JSON.parse(raw);
-        } catch (e) {
-          payload = {};
-        }
-      } else if (raw && typeof raw === "object") {
-        payload = Object.assign({}, raw);
-      }
-      if (!payload.uiSource)
-        payload.uiSource = "core";
-      data = {
-        component: {
-          url: data.path,
-          prop: {
-            dialogJson: JSON.stringify(payload),
-          },
-        },
-      };
-    }
     const { component } = data;
-    if (!component) {
-      console.warn("CustomDialog: missing component", JSON.stringify(data));
-      return;
-    }
+    activate();
     if (component.model) {
       const mod =Lua.createQmlObject(component.model);
       mod.accepted.connect(() => replyToServer(mod.result));
@@ -561,7 +530,6 @@ QtObject {
     } else {
       popupReady(Command.CustomDialog, data, null);
     }
-    activate();
   }
 
   function fillAG(sender, data) {
@@ -611,7 +579,6 @@ QtObject {
     roomPage.addCallback(Command.SetPlayerMark, setPlayerMark);
     roomPage.addCallback(Command.SetBanner, setBanner);
     roomPage.addCallback(Command.UpdateLimitSkill, updateLimitSkill);
-    roomPage.addCallback(Command.UpdateSkill, updateSkill);
     roomPage.addCallback(Command.MoveCards, (_, data) => {
       for (const move of data.merged) moveCards(move, data);
     });

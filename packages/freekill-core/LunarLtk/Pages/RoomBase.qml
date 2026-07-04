@@ -490,14 +490,6 @@ W.PageBase {
   }
 
   function showPopup(component, prop) {
-    if (!component) {
-      console.error("showPopup: no component");
-      return;
-    }
-    if (component.status !== Component.Ready) {
-      console.error("showPopup: component not ready:", component.errorString());
-      return;
-    }
     const item = component.createObject(roomScene, prop);
     item.z = 1000;
     if (popupItem) {

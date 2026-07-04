@@ -443,7 +443,6 @@ function Phase:main()
       room.logic:trigger(fk.AfterDrawNCards, player, data)
     end,
     [Player.Play] = function()
-      room:doBroadcastNotify("UpdateSkill", "", {player})
       local wordTestEnabled = string.find(room.wordList or "", "_free") == nil
       while not player.dead do
         if data.phase_end then break end

@@ -44,28 +44,6 @@ QtObject {
   property list<var> disableSchemes: []
   property int currentDisableIdx: 0
   property var curScheme
-
-  function cloneScheme(s) {
-    if (!s) s = {};
-    const ret = {
-      name: s.name ?? "",
-      banPkg: {},
-      normalPkg: {},
-      banCardPkg: (s.banCardPkg ?? []).slice(),
-    };
-    for (const k in (s.banPkg ?? {})) {
-      ret.banPkg[k] = (s.banPkg[k] ?? []).slice();
-    }
-    for (const k in (s.normalPkg ?? {})) {
-      ret.normalPkg[k] = (s.normalPkg[k] ?? []).slice();
-    }
-    return ret;
-  }
-
-  function refreshCurScheme() {
-    curScheme = cloneScheme(curScheme);
-    disableSchemes[currentDisableIdx] = curScheme;
-  }
   property list<string> shownPkg: []
   property list<string> favoriteGenerals: []
   property list<string> enabledResourcePacks: []
@@ -196,20 +174,13 @@ QtObject {
     // disabledGenerals = conf.disabledGenerals ?? [];
     // disableGeneralSchemes = conf.disableGeneralSchemes ?? [ disabledGenerals ];
     // disableSchemeIdx = conf.disableSchemeIdx ?? 0;
-    const rawSchemes = conf.disableSchemes ?? [{
+    disableSchemes = conf.disableSchemes ?? [{
       name: "",
       banPkg: {},    // 被禁用的包，内部数据为 包名: 白名单武将名数组
       normalPkg: {},  // 未被禁用的包，内部数据为 包名: 黑名单武将名数组
       banCardPkg: [], // 被禁用的卡包
     }];
-    disableSchemes = rawSchemes.map(s => cloneScheme(s));
-    if (disableSchemes.length === 0) {
-      disableSchemes = [cloneScheme({})];
-    }
     currentDisableIdx = conf.currentDisableIdx ?? 0;
-    if (currentDisableIdx < 0 || currentDisableIdx >= disableSchemes.length) {
-      currentDisableIdx = 0;
-    }
     curScheme = disableSchemes[currentDisableIdx];
     shownPkg = conf.shownPkg ?? [];
     favoriteGenerals = conf.favoriteGenerals ?? [];
